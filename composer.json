@@ -1,5 +1,5 @@
 {
-  "name": "ctsmedia/contao-phpbbBridge",
+  "name": "ctsmedia/contao-phpbb-bridge-bundle",
   "description": "phpbb 3.1 Bridge for Contao 4",
   "type": "symfony-bundle",
   "keywords": ["contao", "phpbb", "symfony", "forum"],
