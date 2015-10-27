@@ -1,15 +1,14 @@
 #!/bin/sh
+
+set -e
+
 echo "***********************************"
-printf "*** prepare project script\n"
+printf "*** PRE prepare project script\n"
 echo    "---------------------------------------------------"
 printf "| $(hostname -i) $DOCKER_DOMAIN                      | \n"
 echo     "---------------------------------------------------"
 if [ ! -e "project-initialized.flag" ]
 then
-
-  ### create database
-  printf "*** Creating database 'contao' if not already exists"
-  mysql -e "CREATE DATABASE IF NOT EXISTS contao CHARSET UTF8"
 
   ### create project dir
   printf "*** creating project structure for domain ${DOCKER_DOMAIN} \n"
@@ -27,12 +26,13 @@ then
     -out /etc/apache2/certs/${DOCKER_DOMAIN}.cert.pem -days 1240 -nodes \
     -subj "/C=DE/ST=NRW/L=COLOGNE/O=CTS GmbH/OU=IT/CN=${DOCKER_DOMAIN}"
 
-  printf "*** Modifying Contao config"
-  printf "**** Register CtsmediaPhpbbBridgeBundle"
+  printf "*** Modifying Contao config\n"
+  printf "**  Register CtsmediaPhpbbBridgeBundle\n"
   sed -i '/ContaoNewsletterBundle/a new Ctsmedia\\Phpbb\\BridgeBundle\\CtsmediaPhpbbBridgeBundle(),' \
     /var/www/share/${DOCKER_DOMAIN}/contao/app/AppKernel.php
-  printf "**** Adding Composer Dependency for ctsmedia/contao-phpbbBridge"
-  composer --working-dir=/var/www/share/${DOCKER_DOMAIN}/contao require ctsmedia/contao-phpbbBridge dev-master
+  printf "**  Adding Composer Dependency for ctsmedia/contao-phpbb-bridge-bundle\n"
+  rm -r /var/www/share/${DOCKER_DOMAIN}/contao/app/cache/* # Current Workaround for composer fail
+  composer --working-dir=/var/www/share/${DOCKER_DOMAIN}/contao require ctsmedia/contao-phpbb-bridge-bundle dev-master
 
   printf "*** creating project initialized flag\n"
   touch project-initialized.flag
