@@ -16,7 +16,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Ctsmedia\\Phpbb\\BridgeBundle": "src/"
+      "Ctsmedia\\Phpbb\\BridgeBundle\\": "src/"
     }
   }
 }
