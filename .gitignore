@@ -1,0 +1,9 @@
+#### IDEs
+.idea/
+nbproject/
+
+#### Composer
+/vendor/
+
+#### Other
+gulp.config.js
