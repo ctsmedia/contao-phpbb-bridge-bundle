@@ -31,8 +31,11 @@ then
   sed -i '/ContaoNewsletterBundle/a new Ctsmedia\\Phpbb\\BridgeBundle\\CtsmediaPhpbbBridgeBundle(),' \
     /var/www/share/${DOCKER_DOMAIN}/contao/app/AppKernel.php
   printf "**  Adding Composer Dependency for ctsmedia/contao-phpbb-bridge-bundle\n"
-  rm -r /var/www/share/${DOCKER_DOMAIN}/contao/app/cache/* # Current Workaround for composer fail
-  composer --working-dir=/var/www/share/${DOCKER_DOMAIN}/contao require ctsmedia/contao-phpbb-bridge-bundle dev-master
+  #rm -r /var/www/share/${DOCKER_DOMAIN}/contao/app/cache/* # Current Workaround for composer fail
+  composer --working-dir=/var/www/share/${DOCKER_DOMAIN}/contao --no-update \
+    require ctsmedia/contao-phpbb-bridge-bundle dev-master
+  composer --working-dir=/var/www/share/${DOCKER_DOMAIN}/contao --no-scripts --prefer-dist --no-dev \
+    update ctsmedia/contao-phpbb-bridge-bundle
 
   printf "*** creating project initialized flag\n"
   touch project-initialized.flag
