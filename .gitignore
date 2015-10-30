@@ -7,3 +7,5 @@ nbproject/
 
 #### Other
 gulp.config.js
+node_modules
+insecure_key
