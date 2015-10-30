@@ -10,13 +10,25 @@
       "email": "d.schwiperich@cts-media.eu"
     }
   ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/ctsmedia/phpbb-app"
+    }
+  ],
   "require": {
     "php": ">=5.4",
-    "contao/core-bundle": "^4.0.4"
+    "contao/core-bundle": "^4.0.4",
+    "phpbb/phpbb":"dev-ticket/14211"
+  },
+  "require-dev": {
+    "contao/core-bundle": "^4.0.4",
+    "contao/standard-edition": "^4.0.4"
   },
   "autoload": {
     "psr-4": {
       "Ctsmedia\\Phpbb\\BridgeBundle\\": "src/"
     }
-  }
+  },
+  "minimum-stability": "beta"
 }
