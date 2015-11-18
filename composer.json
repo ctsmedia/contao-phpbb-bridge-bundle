@@ -18,17 +18,18 @@
   ],
   "require": {
     "php": ">=5.4",
-    "contao/core-bundle": "^4.0.4",
-    "phpbb/phpbb":"dev-ticket/14211"
+    "contao/core-bundle": "^4.0.4"
+
   },
   "require-dev": {
-    "contao/core-bundle": "^4.0.4",
-    "contao/standard-edition": "^4.0.4"
+    "contao/standard-edition": "^4.0.4",
+    "phpbb/phpbb":"dev-ticket/14211"
   },
   "autoload": {
     "psr-4": {
       "Ctsmedia\\Phpbb\\BridgeBundle\\": "src/"
     }
   },
-  "minimum-stability": "beta"
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
