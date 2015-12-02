@@ -18,12 +18,12 @@
   ],
   "require": {
     "php": ">=5.4",
-    "contao/core-bundle": "^4.0.4"
+    "contao/core-bundle": "^4.0.4",
+    "phpbb/phpbb":"dev-ticket/14211"
 
   },
   "require-dev": {
-    "contao/standard-edition": "^4.0.4",
-    "phpbb/phpbb":"dev-ticket/14211"
+    "contao/standard-edition": "^4.0.4"
   },
   "autoload": {
     "psr-4": {
