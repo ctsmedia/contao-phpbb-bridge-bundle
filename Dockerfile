@@ -1,8 +1,8 @@
-FROM ctsmedia/baseimage-web:latest
+FROM ctsmedia/baseimage-web:2.1.1
 MAINTAINER Daniel Schwiperich | ctsmedia <entwicklung@cts-media.eu>
 
 ENV DOCKER_DOMAIN phpbbbridge.contao.local
-ENV CONTAO_COMPOSER_VERSION ^4.0.4
+ENV CONTAO_COMPOSER_VERSION ^4.1.0
 
 #RUN install_php 5.4
 
