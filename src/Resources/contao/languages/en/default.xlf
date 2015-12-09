@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<xliff version="1.1">
+    <file datatype="php" original="src/Resources/contao/languages/en/default.php" source-language="en"
+          target-language="de">
+        <body>
+            <trans-unit id="PTY.phpbb_forum.0">
+                <source>PhpBB Forum page</source>
+            </trans-unit>
+            <trans-unit id="PTY.phpbb_forum.1">
+                <source>Acts as Entry Point for the phpBB Forum</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
