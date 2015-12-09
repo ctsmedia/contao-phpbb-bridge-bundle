@@ -30,8 +30,7 @@ docker.sftp = {
 
 // src dirs
 var srcVendors = [
-        'vendor/?(contao/core-bundle/src)/**/*', // Some vendors, for debugging purposes
-        '!vendor/phpbb/phpbb/**/*', // not atm
+        'vendor/contao/core-bundle/src/**/*', // Some vendors, for debugging purposes
     ],
     srcBridge = 'src/**/*';
 
@@ -133,7 +132,6 @@ gulp.task('docker:watch', ['docker:init'], function () {
         ftpData.remotePath = ftpData.remotePathBridge;
         console.log('Module File ' + vynil.path + ' was ' + vynil.event + ', running docker sftp...');
         console.log(docker.sftp);
-        console.log("xxx");
         gulp.src(vynil.path, {base: './'})
             .pipe(gsftp(ftpData));
     });
@@ -143,7 +141,7 @@ gulp.task('docker:watch', ['docker:init'], function () {
         console.log('Module File ' + vynil.path + ' was ' + vynil.event + ', running docker sftp...');
         var ftpData = docker.sftp;
         ftpData.remotePath = ftpData.remotePathVendors;
-        gulp.src(vynil.path, {base: './'})
+        gulp.src(vynil.path, {base: './vendor/'})
             .pipe(gsftp(ftpData));
     });
 
