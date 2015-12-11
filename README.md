@@ -3,6 +3,73 @@ phpbb 3.1 Bridge for Contao 4
 
 **not stable yet**
 
+## Installation 
+
+Add the bridge as dependency in your contao installation:
+`composer require ctsmedia/contao-phpbb-bridge-bundle`
+
+Modify the AppKernel.php and add the following to the registerBundles Method:
+`new Ctsmedia\\Phpbb\\BridgeBundle\\CtsmediaPhpbbBridgeBundle(),`
+
+For Example: 
+```php
+ public function registerBundles()
+    {
+        $bundles = [
+            new Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
+            new Symfony\Bundle\SecurityBundle\SecurityBundle(),
+       ...
+            new Contao\NewsBundle\ContaoNewsBundle(),
+            new Contao\NewsletterBundle\ContaoNewsletterBundle(),
+            new Ctsmedia\Phpbb\BridgeBundle\CtsmediaPhpbbBridgeBundle(),
+        ];
+
+        ...
+
+        return $bundles;
+    }
+```
+
+### Configuration
+
+#### phpBB DB
+If phpBB is installed in it's own DB the bridge needs to know this.
+Add the db connection and make the bridge aware in config.yml:
+```yml
+# Doctrine configuration
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                driver:   pdo_mysql
+                host:     "%database_host%"
+                port:     "%database_port%"
+                user:     "%database_user%"
+                password: "%database_password%"
+                dbname:   "%database_name%"
+                charset:  UTF8
+            phpbb:
+                driver:   pdo_mysql
+                host:     "%database_host_phpbb%"
+                port:     "%database_port_phpbb%"
+                user:     "%database_user_phpbb%"
+                password: "%database_password_phpbb%"
+                dbname:   "%database_name_phpbb%"
+                charset:  UTF8
+                
+services:
+    phpbb_bridge.connector:
+        class: Ctsmedia\Phpbb\BridgeBundle\PhpBB\Connector
+        arguments: 
+            - "@doctrine.dbal.phpbb_connection"                
+```
+
+## Usage in Development
+
+### Access phpbb User
+`System::getContainer()->get('phpbb_bridge.connector')->getUser("ctsmedia");`
+
 ## Development / Testing
 
 We provide a set of development tools if you like to contribute or modify the bridge

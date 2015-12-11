@@ -1,2 +1,5 @@
-#services:
-  #phpbb_bridge.xxx
+services:
+    phpbb_bridge.connector:
+        class: Ctsmedia\Phpbb\BridgeBundle\PhpBB\Connector
+        arguments:
+            - "@database_connection"

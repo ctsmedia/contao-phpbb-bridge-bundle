@@ -15,3 +15,4 @@ $GLOBALS['TL_PTY']['phpbb_forum'] = 'Ctsmedia\\Phpbb\\BridgeBundle\\PageType\\Fo
  * Hooks
  */
 $GLOBALS['TL_HOOKS']['getPageStatusIcon'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoBackendListener', 'onGetPageStatusIcon');
+$GLOBALS['TL_HOOKS']['generateFrontendUrl'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoFrontendListener', 'onGenerateFrontendUrl');

@@ -30,10 +30,19 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
+                ->arrayNode('db')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('table_prefix')
+                            ->defaultValue('phpbb_')
+                        ->end()
+                    ->end()
+                ->end()
                 ->scalarNode('phpbb_dir')
                     ->defaultValue('phpBB3')
                 ->end()
-            ->end();
+            ->end()
+        ;
 
         return $treeBuilder;
     }
