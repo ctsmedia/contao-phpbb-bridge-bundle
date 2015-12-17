@@ -1,0 +1,16 @@
+imports:
+    - { resource: contao.yml }
+
+services:
+    ctsmedia.contaophpbbbridge.connector:
+        class: ctsmedia\contaophpbbbridge\contao\Connector
+        arguments:
+            - '%contao.forum_pageId%'
+    ctsmedia.contaophpbbbridge.theme_listener:
+        class: ctsmedia\contaophpbbbridge\event\ThemeListener
+        arguments:
+            - %core.root_path%
+            - @template
+            - @ctsmedia.contaophpbbbridge.connector
+        tags:
+            - { name: event.listener }

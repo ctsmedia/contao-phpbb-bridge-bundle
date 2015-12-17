@@ -1,0 +1,3 @@
+parameters:
+    contao.forum_pageId: ~
+    contao.forum_pageUrl: ~

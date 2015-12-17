@@ -1,0 +1,25 @@
+{
+    "name": "ctsmedia/contaophpbbbridge",
+    "description": "phpbb 3.1 Bridge for Contao 4 - phpBB Part",
+    "type": "phpbb-extension",
+    "version": "0.1.0",
+    "keywords": ["contao", "phpbb", "symfony", "forum"],
+    "license": "GPL v2",
+    "authors": [
+        {
+            "name": "Daniel Schwiperich",
+            "email": "d.schwiperich@cts-media.eu"
+        }
+    ],
+    "require": {
+        "php": ">=5.4"
+    },
+    "extra": {
+        "display-name": "Contao phpBB Bridge",
+        "soft-require": {
+            "phpbb/phpbb": "3.1.*"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
