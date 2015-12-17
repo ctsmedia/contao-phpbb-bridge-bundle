@@ -24,9 +24,9 @@ class ContaoFrontendListener
 
     public function onGenerateFrontendUrl(array $arrRow, $strParams, $strUrl){
 
-        if(isset($arrRow['type']) && $arrRow['type'] == 'phpbb_forum'){
+        if(isset($arrRow['type']) && $arrRow['type'] == 'phpbb_forum' && (!isset($arrRow['skipInternalHook']) && $arrRow['skipInternalHook'] !== true )){
 
-            //@TODO make this configurable
+            //@TODO replace with dca value
             return System::getContainer()->getParameter('phpbb_bridge.phpbb_dir') . "/index.php";
         }
 

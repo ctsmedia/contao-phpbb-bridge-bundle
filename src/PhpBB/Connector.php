@@ -11,8 +11,10 @@
 
 namespace Ctsmedia\Phpbb\BridgeBundle\PhpBB;
 
+use Contao\PageModel;
 use Contao\System;
 use Doctrine\DBAL\Connection;
+use Symfony\Component\Yaml\Yaml;
 
 
 /**
@@ -25,12 +27,13 @@ class Connector
     /**
      * @var Connection
      */
-    private $db;
+    protected $db;
 
     /**
      * @var mixed|string
      */
-    private $table_prefix = '';
+    protected $table_prefix = '';
+
 
     public function __construct(Connection $db)
     {
@@ -42,7 +45,7 @@ class Connector
     {
         $queryBuilder = $this->db->createQueryBuilder()
             ->select('*')
-            ->from($this->table_prefix.'users', 'pu')
+            ->from($this->table_prefix . 'users', 'pu')
             ->where('username = ?')
             ->orWhere('username_clean = ?');
 
@@ -51,5 +54,32 @@ class Connector
 
         return $result;
     }
+
+    /**
+     * @return array
+     */
+    public function getConfig()
+    {
+        return Yaml::parse(file_get_contents(__DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/config/contao.yml'));
+    }
+
+    public function updateConfig(array $config)
+    {
+        $currentConfig = $this->getConfig();
+        $isChanged = false;
+
+        foreach ($config as $key => $value) {
+            if (array_key_exists($key, $currentConfig['parameters'])) {
+                $currentConfig['parameters'][$key] = $value;
+                $isChanged = true;
+            }
+        }
+
+        if($isChanged === true) {
+            file_put_contents(__DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/config/contao.yml', Yaml::dump($currentConfig));
+        }
+
+    }
+
 
 }

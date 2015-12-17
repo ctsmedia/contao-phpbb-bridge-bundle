@@ -35,22 +35,9 @@ class Forum extends PageRegular
     {
         $this->prepare($objPage);
 
-        $forumRequest = new Request();
-
-       // $this->Template->dumpTemplateVars();
-        $this->Template->main = "xxx";
+        $this->Template->main = "%%FORUM%%";
 
         $response = $this->Template->getResponse($blnCheckRequest);
-
-        dump($this->getContainer()->getParameter('phpbb_bridge.phpbb_dir'));
-        dump($this->getContainer()->getParameter('kernel.root_dir'));
-
-        $currentDir = getcwd();
-        chdir($this->getContainer()->getParameter('kernel.root_dir') . '/../web/' . $this->getContainer()->getParameter('phpbb_bridge.phpbb_dir'));
-
-        include_once  'index.php';
-
-        chdir($currentDir);
 
         return $response;
     }
