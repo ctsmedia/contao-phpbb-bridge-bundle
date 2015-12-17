@@ -9,7 +9,8 @@
  * 
  */
 
-$GLOBALS['TL_DCA']['tl_page']['palettes']['phpbb_forum'] = '{title_legend},title,type;{title_legend},phpbb_alias,phpbb_path;{layout_legend:hide},includeLayout;{tabnav_legend:hide},tabindex,accesskey;{publish_legend},published';
+$GLOBALS['TL_DCA']['tl_page']['palettes']['phpbb_forum'] = '{title_legend},title,type;{phpbb
+_legend},phpbb_alias,phpbb_path;{layout_legend:hide},includeLayout;cssClass;{tabnav_legend:hide},tabindex,accesskey;{publish_legend},published';
 $GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_alias'] = array
 (
     'label'                   => &$GLOBALS['TL_LANG']['tl_page']['phpbb_alias'],
@@ -89,18 +90,15 @@ class tl_page_phpbbforum extends tl_page {
 
     protected function generateForumlayout($activeRecord) {
         Message::addInfo("Generating Layout");
-        $forumPage = new \Ctsmedia\Phpbb\BridgeBundle\PageType\Forum();
-        $objPage = \Contao\PageModel::findById($activeRecord->id);
-        $output = $forumPage->getResponse($objPage);
 
-        $parts = explode("%%FORUM%%", $output);
-        $overall_header = $parts[0];
-        $overall_footer = $parts[1];
+        $row = $activeRecord->row();
+        $row['skipInternalHook'] = true;
+        $url = Controller::generateFrontendUrl($row, null, null, false);
 
-        //dump($overall_footer);
+        $frontendRequest = new \Contao\Request();
+        $frontendRequest->send(Environment::get('host').'/'.$url);
 
-        file_put_contents(__DIR__ . '/../../../Resources/phpBB/ctsmedia/contaophpbbbridge/styles/prosilver/template/overall_header.html', $overall_header);
-        file_put_contents(__DIR__ . '/../../../Resources/phpBB/ctsmedia/contaophpbbbridge/styles/prosilver/template/overall_footer.html', $overall_footer);
+
 
     }
 

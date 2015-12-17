@@ -26,8 +26,7 @@ class ContaoFrontendListener
 
         if(isset($arrRow['type']) && $arrRow['type'] == 'phpbb_forum' && (!isset($arrRow['skipInternalHook']) && $arrRow['skipInternalHook'] !== true )){
 
-            //@TODO replace with dca value
-            return System::getContainer()->getParameter('phpbb_bridge.phpbb_dir') . "/index.php";
+            return $arrRow['phpbb_alias'] . "/index.php";
         }
 
 
