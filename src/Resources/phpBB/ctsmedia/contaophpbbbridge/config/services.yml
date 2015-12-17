@@ -12,5 +12,6 @@ services:
             - %core.root_path%
             - @template
             - @ctsmedia.contaophpbbbridge.connector
+            - {body_class: '%contao.body_class%'}
         tags:
             - { name: event.listener }

@@ -32,15 +32,19 @@ class ThemeListener implements EventSubscriberInterface
 
     protected $contaoConnector;
 
+    protected $config = array();
+
     /**
      * ThemeListener constructor.
      * @param $phpbb_root_path
      * @param \phpbb\template\template $template
      */
-    public function __construct($phpbb_root_path , \phpbb\template\template $template, Connector $contaoConnector)
+    public function __construct($phpbb_root_path , \phpbb\template\twig\twig $template, Connector $contaoConnector, array $config)
     {
         $this->template = $template;
         $this->contaoConnector = $contaoConnector;
+        $this->config = $config;
+
     }
 
     /**
@@ -72,13 +76,22 @@ class ThemeListener implements EventSubscriberInterface
      */
     public function injectThemeFooter(Event $event) {
 
+        if(isset($this->config['body_class'])) {
+            $this->template->append_var('BODY_CLASS', $this->config['body_class']);
+        }
+
+
+
 //        echo "ContaoConnection";
 //
 //        dump($this->contaoConnector->getForumPageId());
 //
 //        echo "template";
 //
+//        dump(get_class($this->template));
 //        dump($this->template);
+//
+//
 //
 //        echo "event";
 //
