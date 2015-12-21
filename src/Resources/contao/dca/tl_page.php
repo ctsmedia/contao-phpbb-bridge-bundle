@@ -96,7 +96,7 @@ class tl_page_phpbbforum extends tl_page {
         $url = Controller::generateFrontendUrl($row, null, null, false);
 
         $frontendRequest = new \Contao\Request();
-        $frontendRequest->send(Environment::get('host').'/'.$url);
+        $frontendRequest->send(Environment::get('url').'/'.$url);
 
 
 
