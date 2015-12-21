@@ -61,7 +61,7 @@ class tl_page_phpbbforum extends tl_page {
             if(!is_link($dc->activeRecord->phpbb_alias . '/ext/ctsmedia') ||
                 readlink($dc->activeRecord->phpbb_alias . '/ext/ctsmedia') != "../../contao/vendor/ctsmedia/contao-phpbb-bridge-bundle/src/Resources/phpBB/ctsmedia" ) {
                 Message::addInfo("Setting Vendor Link");
-                symlink("../../contao/vendor/ctsmedia/contao-phpbb-bridge-bundle/src/Resources/phpBB/ctsmedia", $dc->activeRecord->phpbb_alias . '/ext/ctsmedia');
+                symlink(TL_ROOT . "/vendor/ctsmedia/contao-phpbb-bridge-bundle/src/Resources/phpBB/ctsmedia", $dc->activeRecord->phpbb_alias . '/ext/ctsmedia');
             }
 
             Message::addInfo("Please activate the contao extension in the phpbb backend");
