@@ -69,7 +69,12 @@ class Forum extends PageRegular
 
         $html = $response->getContent();
 
+        // Ajust link paths
         $html = preg_replace('/href\=\"(?!http|\/)/', 'href="/', $html);
+
+        // Ajust src paths
+        $html = preg_replace('/src\=\"(?!http|\/)/', 'src="/', $html);
+        $html = preg_replace('/content\=\"(?!http|\/)/', 'content="/', $html);
 
         $parts = explode("%%FORUM%%", $html);
         $overall_header = $parts[0];
