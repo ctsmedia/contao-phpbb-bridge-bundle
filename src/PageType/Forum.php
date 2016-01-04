@@ -45,20 +45,21 @@ class Forum extends PageRegular
         //dump($this->Template);
 
         $this->Template->main = "%%FORUM%%";
-        $headTags = $this->Template->head;
+
+        $style = $this->Template->replaceInsertTags($this->Template->stylesheets);
+        $style = $this->Template->replaceDynamicScriptTags($style);
+        $style = preg_replace('/href\=\"(?!http|\/)/', 'href="/', $style);
+
+        $head = $this->Template->replaceInsertTags($this->Template->head);
+        $head = $this->Template->replaceDynamicScriptTags($head);
+        $head = preg_replace('/src\=\"(?!http|\/)/', 'href="/', $head);
         $this->Template->head = "";
-
-        $response = $this->Template->getResponse($blnCheckRequest);
-
-        $style = preg_replace('/href\=\"(?!http|\/)/', 'href="/', $this->Template->replaceDynamicScriptTags($this->Template->stylesheets));
-        $headTags = preg_replace('/href\=\"(?!http|\/)/', 'href="/', $this->Template->replaceDynamicScriptTags($headTags));
-        $headTags = preg_replace('/src\=\"(?!http|\/)/', 'href="/', $headTags);
 
 
         // @todo Add framework, mooscripts etc?
         $phpbbHeaders = "";
         $phpbbHeaders .= $style;
-        $phpbbHeaders .= $headTags;
+        $phpbbHeaders .= $head;
 
         file_put_contents(__DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/styles/all/template/event/overall_header_stylesheets_after.html', $phpbbHeaders);
 
@@ -67,6 +68,7 @@ class Forum extends PageRegular
         //dump($this->Template->class);
 
 
+        $response = $this->Template->getResponse($blnCheckRequest);
         $html = $response->getContent();
 
         // Ajust link paths
