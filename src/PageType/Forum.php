@@ -52,7 +52,8 @@ class Forum extends PageRegular
 
         $head = $this->Template->replaceInsertTags($this->Template->head);
         $head = $this->Template->replaceDynamicScriptTags($head);
-        $head = preg_replace('/src\=\"(?!http|\/)/', 'href="/', $head);
+        $head = preg_replace('/src\=\"(?!http|\/)/', 'src="/', $head);
+        $head = preg_replace('/href\=\"(?!http|\/)/', 'href="/', $head);
         $this->Template->head = "";
 
 
