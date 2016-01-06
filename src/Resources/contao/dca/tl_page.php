@@ -9,8 +9,12 @@
  * 
  */
 
-$GLOBALS['TL_DCA']['tl_page']['palettes']['phpbb_forum'] = '{title_legend},title,type;{phpbb
-_legend},phpbb_alias,phpbb_path;{layout_legend:hide},includeLayout;cssClass;{tabnav_legend:hide},tabindex,accesskey;{publish_legend},published';
+$GLOBALS['TL_DCA']['tl_page']['palettes']['phpbb_forum'] = '{title_legend},title,type;{phpbb_legend},phpbb_alias,phpbb_path;{layout_legend:hide},includeLayout;cssClass,phpbb_dynamic_layout;{tabnav_legend:hide},tabindex,accesskey;{publish_legend},published';
+
+$GLOBALS['TL_DCA']['tl_page']['config']['onsubmit_callback'][] = array('tl_page_phpbbforum', 'updateConfig');
+$GLOBALS['TL_DCA']['tl_page']['config']['onsubmit_callback'][] = array('tl_page_phpbbforum', 'generateForumLayout');
+
+// @todo add translations and label texts
 $GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_alias'] = array
 (
     'label'                   => &$GLOBALS['TL_LANG']['tl_page']['phpbb_alias'],
@@ -20,6 +24,7 @@ $GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_alias'] = array
     'eval'                    => array('rgxp'=>'folderalias', 'doNotCopy'=>true, 'maxlength'=>128, 'tl_class'=>'w50', 'mandatory' => true),
     'sql'                     => "varchar(128) COLLATE utf8_bin NOT NULL default ''"
 );
+// @todo add translations and label texts
 $GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_path'] = array
 (
     'label'                   => &$GLOBALS['TL_LANG']['tl_page']['phpbb_path'],
@@ -33,6 +38,15 @@ $GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_path'] = array
         array('tl_page_phpbbforum', 'generatePhpbbLink')
     ),
 );
+// @todo add translations and label texts
+$GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_dynamic_layout'] = array
+(
+    'label'                   => &$GLOBALS['TL_LANG']['tl_page']['phpbb_dynamic_layout'],
+    'exclude'                 => true,
+    'inputType'               => 'checkbox',
+    'eval'                    => array('tl_class'=>'w50 m12'),
+    'sql'                     => "char(1) NOT NULL default ''"
+);
 
 class tl_page_phpbbforum extends tl_page {
 
@@ -40,8 +54,6 @@ class tl_page_phpbbforum extends tl_page {
 
         if(is_link($dc->activeRecord->phpbb_alias) && readlink($dc->activeRecord->phpbb_alias) == $varValue) {
             Message::addInfo("Path to forum already set");
-            $this->updateConfig($dc->activeRecord);
-            $this->generateForumlayout($dc->activeRecord);
             return $varValue;
         }
 
@@ -70,28 +82,42 @@ class tl_page_phpbbforum extends tl_page {
             throw new Exception("Forum could not be found: ".$varValue . "/viewtopic.php");
         }
 
-        $this->updateConfig($dc->activeRecord);
-        $this->generateForumlayout($dc->activeRecord);
-
         return $varValue;
     }
 
-    protected function updateConfig($activeRecord) {
+    public  function updateConfig(DataContainer $dc) {
+
+        // Return if there is no active record (override all)
+        if (!$dc->activeRecord || $dc->activeRecord->type != 'phpbb_forum')
+        {
+            return;
+        }
+
         Message::addInfo("Updating Config");
-        $row = $activeRecord->row();
+        $row = $dc->activeRecord->row();
         $row['skipInternalHook'] = true;
         $url = Controller::generateFrontendUrl($row);
         System::getContainer()->get('phpbb_bridge.connector')->updateConfig(array(
-            'contao.forum_pageId' => $activeRecord->id,
-            'contao.forum_pageUrl' => $url,
+            'contao.forum_pageId' => $dc->activeRecord->id,
+            'contao.forum_pageUrl' => Environment::get('url').'/'.$url,
+            'contao.load_dynamic_layout' => $dc->activeRecord->phpbb_dynamic_layout,
         ));
     }
 
 
-    protected function generateForumlayout($activeRecord) {
+    public function generateForumlayout(DataContainer $dc) {
+
+        // Return if there is no active record (override all)
+        if (!$dc->activeRecord || $dc->activeRecord->type != 'phpbb_forum')
+        {
+            return;
+        }
+
         Message::addInfo("Generating Layout");
 
-        $row = $activeRecord->row();
+        //dump($dc->activeRecord->phpbb_dynamic_layout);
+
+        $row = $dc->activeRecord->row();
         $row['skipInternalHook'] = true;
         $url = Controller::generateFrontendUrl($row, null, null, false);
 

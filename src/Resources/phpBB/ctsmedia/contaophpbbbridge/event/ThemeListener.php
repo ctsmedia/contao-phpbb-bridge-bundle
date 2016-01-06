@@ -63,11 +63,23 @@ class ThemeListener implements EventSubscriberInterface
      */
     public function injectThemeHeader(data $event) {
 
-        // @todo Overwrite Header
-        $data = $event->get_data();
+        // Overwrite Header
+        //$data = $event->get_data();
         //$data['page_header_override'] = true;
         //$data['page_title'] = "xxx";
-        $event->set_data($data);
+        //$event->set_data($data);
+
+        // Add Layout sections
+
+        $jsonResponse = file_get_contents($this->config['forum_pageUrl'].'?format=json');
+        $sections = json_decode($jsonResponse);
+
+        if(isset($sections->overall_header)) {
+            $this->template->assign_var('CONTAO_LAYOUT_HEADER', $sections->overall_header);
+        }
+        if(isset($sections->overall_footer)) {
+            $this->template->assign_var('CONTAO_LAYOUT_FOOTER', $sections->overall_footer);
+        }
 
     }
 

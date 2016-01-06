@@ -30,6 +30,11 @@ For Example:
     }
 ```
 
+### Optimization
+The bridge is doing some internal http requests at some points. To increase performance you may want to add a local dns entry 
+for your domain on your server. So the requests never leave the server.
+Especially if you use dynamic layout rendering
+
 ### Configuration
 
 #### phpBB DB
