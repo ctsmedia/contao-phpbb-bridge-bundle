@@ -11,6 +11,7 @@
 
 namespace Ctsmedia\Phpbb\BridgeBundle\PageType;
 
+use Contao\FrontendTemplate;
 use Contao\PageRegular;
 use Contao\System;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -47,16 +48,11 @@ class Forum extends PageRegular
         // prepare the template contents
         $this->Template->main = "%%FORUM%%";
 
-        $style = $this->Template->replaceInsertTags($this->Template->stylesheets);
-        $style = $this->Template->replaceDynamicScriptTags($style);
-        $style = preg_replace('/href\=\"(?!http|\/)/', 'href="/', $style);
-
-        $head = $this->Template->replaceInsertTags($this->Template->head);
-        $head = $this->Template->replaceDynamicScriptTags($head);
-        $head = preg_replace('/src\=\"(?!http|\/)/', 'src="/', $head);
-        $head = preg_replace('/href\=\"(?!http|\/)/', 'href="/', $head);
+        $style = $this->prepareHeadTags($this->Template->stylesheets);
+        $mooScripts = $this->prepareHeadTags($this->Template->mooScripts);
+        $framework = $this->prepareHeadTags($this->Template->framework);
+        $head = $this->prepareHeadTags($this->Template->head);
         $this->Template->head = "";
-
 
 
         $response = $this->Template->getResponse($blnCheckRequest);
@@ -84,12 +80,13 @@ class Forum extends PageRegular
         }
 
 
-
         // Generate files for static and generic contents
 
         // @todo Add framework, mooscripts etc?
         $phpbbHeaders = "";
+        $phpbbHeaders .= $framework;
         $phpbbHeaders .= $style;
+        $phpbbHeaders .= $mooScripts;
         $phpbbHeaders .= $head;
 
         file_put_contents(__DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/styles/all/template/event/overall_header_stylesheets_after.html',
@@ -135,6 +132,22 @@ class Forum extends PageRegular
             'overall_header' => $overall_header,
             'overall_footer' => $overall_footer,
         );
+    }
+
+    /**
+     * Adjust urls, paths and replaces inserttags
+     *
+     * @param FrontendTemplate $tpl
+     * @param $html
+     * @return string
+     */
+    protected function prepareHeadTags($html) {
+        $html = $this->Template->replaceInsertTags($html);
+        $html = $this->Template->replaceDynamicScriptTags($html);
+        $html = preg_replace('/src\=\"(?!http|\/)/', 'src="/', $html);
+        $html = preg_replace('/href\=\"(?!http|\/)/', 'href="/', $html);
+
+        return $html;
     }
 
 }
