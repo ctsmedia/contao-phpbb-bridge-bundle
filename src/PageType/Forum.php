@@ -81,8 +81,6 @@ class Forum extends PageRegular
 
 
         // Generate files for static and generic contents
-
-        // @todo Add framework, mooscripts etc?
         $phpbbHeaders = "";
         $phpbbHeaders .= $framework;
         $phpbbHeaders .= $style;
@@ -114,6 +112,8 @@ class Forum extends PageRegular
         // Ajust src paths
         $html = preg_replace('/src\=\"(?!http|\/)/', 'src="/', $html);
         $html = preg_replace('/content\=\"(?!http|\/)/', 'content="/', $html);
+        $html = preg_replace('/url\(\"(?!http|\/)/', 'url("/', $html);
+        $html = preg_replace('/url\(\'(?!http|\/)/', 'url(\'/', $html);
 
         $parts = explode("%%FORUM%%", $html);
         $overall_header = $parts[0];
@@ -146,6 +146,10 @@ class Forum extends PageRegular
         $html = $this->Template->replaceDynamicScriptTags($html);
         $html = preg_replace('/src\=\"(?!http|\/)/', 'src="/', $html);
         $html = preg_replace('/href\=\"(?!http|\/)/', 'href="/', $html);
+        $html = preg_replace('/url\(\"(?!http|\/)/', 'url("/', $html);
+        $html = preg_replace('/url\(\'(?!http|\/)/', 'url(\'/', $html);
+
+        //dump($html);
 
         return $html;
     }

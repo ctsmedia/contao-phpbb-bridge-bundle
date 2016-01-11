@@ -12,6 +12,6 @@ services:
             - %core.root_path%
             - @template
             - @ctsmedia.contaophpbbbridge.connector
-            - {body_class: '%contao.body_class%', forum_pageUrl: '%contao.forum_pageUrl%'}
+            - {body_class: '%contao.body_class%', forum_pageUrl: '%contao.forum_pageUrl%', load_dynamic_layout: '%contao.load_dynamic_layout%'}
         tags:
             - { name: event.listener }
