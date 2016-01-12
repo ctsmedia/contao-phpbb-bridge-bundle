@@ -18,8 +18,8 @@
   ],
   "require": {
     "php": ">=5.4",
-    "contao/core-bundle": "^4.0.4"
-
+    "contao/core-bundle": "^4.0.4",
+    "kriswallsmith/buzz": "~0.15"
   },
   "require-dev": {
     "contao/standard-edition": "^4.0.4",
