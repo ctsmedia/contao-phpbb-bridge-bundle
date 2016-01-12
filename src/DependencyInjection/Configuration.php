@@ -38,7 +38,7 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-                ->scalarNode('phpbb_dir')
+                ->scalarNode('dir')
                     ->defaultValue('phpBB3')
                 ->end()
             ->end()

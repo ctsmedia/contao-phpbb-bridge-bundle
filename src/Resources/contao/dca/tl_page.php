@@ -101,6 +101,7 @@ class tl_page_phpbbforum extends tl_page {
             'contao.forum_pageId' => $dc->activeRecord->id,
             'contao.forum_pageUrl' => Environment::get('url').'/'.$url,
             'contao.load_dynamic_layout' => $dc->activeRecord->phpbb_dynamic_layout,
+            'contao.forum_pageAlias' => $dc->activeRecord->phpbb_alias,
         ));
     }
 

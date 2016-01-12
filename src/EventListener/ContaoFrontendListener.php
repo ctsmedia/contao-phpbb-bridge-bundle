@@ -33,4 +33,16 @@ class ContaoFrontendListener
         return $strUrl;
     }
 
+    public function onImportUser($username, $password, $scope) {
+        dump("Hook Import User called");
+        if ($scope == 'tl_member')
+        {
+            System::getContainer()->get('phpbb_bridge.connector')->login($username, $password);
+        }
+
+        return false;
+    }
+
+
+
 }
