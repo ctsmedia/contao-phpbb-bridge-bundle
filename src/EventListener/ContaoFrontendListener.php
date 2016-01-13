@@ -34,10 +34,10 @@ class ContaoFrontendListener
     }
 
     public function onImportUser($username, $password, $scope) {
-        dump("Hook Import User called");
         if ($scope == 'tl_member')
         {
             System::getContainer()->get('phpbb_bridge.connector')->login($username, $password);
+            // @todo add import process
         }
 
         return false;

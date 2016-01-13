@@ -1,0 +1,3 @@
+ctsmedia_contaophpbbbridge_controller_is_logged_in:
+    path: /contao_connect/is_logged_in
+    defaults: { _controller: ctsmedia.contaophpbbbridge.controller:isLoggedIn }

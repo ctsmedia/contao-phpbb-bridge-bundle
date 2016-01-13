@@ -69,6 +69,8 @@ class ThemeListener implements EventSubscriberInterface
         //$data['page_title'] = "xxx";
         //$event->set_data($data);
 
+        //@todo replace with http library (buzz)
+
         // Load dynamic rendered layout sections (this is optional, otherwise static content will be used)
         if( true === (bool)$this->config['load_dynamic_layout']){
             $jsonResponse = file_get_contents($this->config['forum_pageUrl'].'?format=json');

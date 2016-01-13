@@ -15,3 +15,12 @@ services:
             - {body_class: '%contao.body_class%', forum_pageUrl: '%contao.forum_pageUrl%', load_dynamic_layout: '%contao.load_dynamic_layout%'}
         tags:
             - { name: event.listener }
+    ctsmedia.contaophpbbbridge.controller:
+        class: ctsmedia\contaophpbbbridge\controller\Connect
+        arguments:
+            - @config
+            - @dispatcher
+            - @user
+            - @ctsmedia.contaophpbbbridge.connector
+            - %core.root_path%
+            - %core.php_ext%
