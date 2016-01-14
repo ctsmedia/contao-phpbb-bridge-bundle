@@ -33,25 +33,25 @@ or:
 
 2. Modify the AppKernel.php and add the following to the registerBundles Method:
 `new Ctsmedia\\Phpbb\\BridgeBundle\\CtsmediaPhpbbBridgeBundle(),`
-For Example: 
-```php
- public function registerBundles()
-    {
-        $bundles = [
-            new Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
-            new Symfony\Bundle\SecurityBundle\SecurityBundle(),
-       ...
-            new Contao\NewsBundle\ContaoNewsBundle(),
-            new Contao\NewsletterBundle\ContaoNewsletterBundle(),
-            new Ctsmedia\Phpbb\BridgeBundle\CtsmediaPhpbbBridgeBundle(),
-        ];
 
-        ...
-
-        return $bundles;
-    }
-```
-
+  For Example:  
+  ```php
+   public function registerBundles()
+      {
+          $bundles = [
+              new Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
+              new Symfony\Bundle\SecurityBundle\SecurityBundle(),
+         ...
+              new Contao\NewsBundle\ContaoNewsBundle(),
+              new Contao\NewsletterBundle\ContaoNewsletterBundle(),
+              new Ctsmedia\Phpbb\BridgeBundle\CtsmediaPhpbbBridgeBundle(),
+          ];
+  
+          ...
+  
+          return $bundles;
+      }
+  ```
 3. Login to the Contao Backend and create a Page of type 'PhpBB Forum Site' and configure it appropriate. You'll get some log messages of something fails / succeeds.
 Important is the alias and path to the forum. The Bridge module will create a symlink to it so you can access the forum right on. 
 
