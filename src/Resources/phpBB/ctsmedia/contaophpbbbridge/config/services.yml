@@ -6,6 +6,9 @@ services:
         class: ctsmedia\contaophpbbbridge\contao\Connector
         arguments:
             - '%contao.forum_pageId%'
+            - '@user'
+            - '@auth'
+            - '@request'
     ctsmedia.contaophpbbbridge.theme_listener:
         class: ctsmedia\contaophpbbbridge\event\ThemeListener
         arguments:
@@ -13,6 +16,14 @@ services:
             - @template
             - @ctsmedia.contaophpbbbridge.connector
             - {body_class: '%contao.body_class%', forum_pageUrl: '%contao.forum_pageUrl%', load_dynamic_layout: '%contao.load_dynamic_layout%'}
+        tags:
+            - { name: event.listener }
+        ctsmedia.contaophpbbbridge.contao_listener:
+        class: ctsmedia\contaophpbbbridge\event\ContaoListener
+        arguments:
+            - %core.root_path%
+            - @ctsmedia.contaophpbbbridge.connector
+            - {forum_pageUrl: '%contao.forum_pageUrl%'}
         tags:
             - { name: event.listener }
     ctsmedia.contaophpbbbridge.controller:
@@ -24,3 +35,17 @@ services:
             - @ctsmedia.contaophpbbbridge.connector
             - %core.root_path%
             - %core.php_ext%
+    auth.provider.contao:
+        class: ctsmedia\contaophpbbbridge\contao\AuthProvider
+        arguments:
+            - @dbal.conn
+            - @config
+            - @passwords.manager
+            - @request
+            - @user
+            - @service_container
+            - %core.root_path%
+            - %core.php_ext%
+            - @ctsmedia.contaophpbbbridge.connector
+        tags:
+            - { name: auth.provider }

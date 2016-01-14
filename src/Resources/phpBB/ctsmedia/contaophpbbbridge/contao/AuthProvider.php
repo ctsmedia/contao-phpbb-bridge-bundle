@@ -1,0 +1,67 @@
+<?php
+/*
+ * This file is part of contao-phpbbBridge
+ * 
+ * Copyright (c) CTS GmbH
+ * 
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ * 
+ */
+
+namespace ctsmedia\contaophpbbbridge\contao;
+
+use phpbb\auth\provider\db;
+
+
+/**
+ * Contao Auth provider
+ *
+ * Only extends the default db authentication plugin so we can hook into the login, logout, ... processes
+ * because there exists for some of those no default events.
+ * Feels also cleaner
+ *
+ * The provider just uses default func and additionally sends the auth data to contao via the connector
+ *
+ * @see
+ *
+ * @package ctsmedia\contaophpbbbridge\contao
+ * @author Daniel Schwiperich <d.schwiperich@cts-media.eu>
+ */
+class AuthProvider extends db
+{
+
+    protected $contaoConnector;
+
+    /**
+     * AuthProvider constructor.
+     */
+    public function __construct(\phpbb\db\driver\driver_interface $db, \phpbb\config\config $config, \phpbb\passwords\manager $passwords_manager, \phpbb\request\request $request, \phpbb\user $user, \Symfony\Component\DependencyInjection\ContainerInterface $phpbb_container, $phpbb_root_path, $php_ext, Connector $contaoConnector)
+    {
+        parent::__construct($db, $config, $passwords_manager, $request, $user, $phpbb_container, $phpbb_root_path, $php_ext);
+        $this->contaoConnector = $contaoConnector;
+
+    }
+
+    /**
+     * @param string $username
+     * @param string $password
+     * @return array
+     */
+    public function login($username, $password)
+    {
+        $result = parent::login($username, $password);
+        // We only do need to trigger contao login if the phpbb login was successful
+        if($result['status'] == LOGIN_SUCCESS){
+            $this->contaoConnector->login($username, $password, true);
+        }
+
+        return $result;
+    }
+
+    public function logout($data, $new_session)
+    {
+        $this->contaoConnector->logout();
+        return parent::logout($data, $new_session);
+    }
+}
