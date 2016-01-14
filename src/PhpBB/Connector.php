@@ -16,8 +16,10 @@ use Buzz\Client\Curl;
 use Buzz\Listener\CookieListener;
 use Buzz\Message\RequestInterface;
 use Buzz\Util\Cookie;
-use Buzz\Util\CookieJar;
+use Contao\Encryption;
 use Contao\Environment;
+use Contao\Input;
+use Contao\MemberModel;
 use Contao\System;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Yaml\Yaml;
@@ -58,7 +60,9 @@ class Connector
     /**
      * Check if the current user is logged in
      *
+     * @todo Implement caching?
      * @return bool
+     * @throws \Exception
      */
     public function isLoggedIn()
     {
@@ -72,21 +76,43 @@ class Connector
         if($jsonResponse->getHeader('content-type') == 'application/json') {
             $result = json_decode($jsonResponse->getContent());
         } else {
+            System::log("Could not communicate with forum. JSON Response expected. Got: ".$jsonResponse->getHeader('content-type'), __METHOD__, TL_ERROR);
             throw new \Exception("Could not communicate with forum. JSON Response expected. Got: ".$jsonResponse->getHeader('content-type'));
         }
 
 
-        dump($result->data);
-        dump($result->logged_in);
+        //dump($result->data);
+        //dump($result->logged_in);
 
         return (boolean)$result->logged_in;
     }
 
     /**
+     * Logout from phpbb
+     */
+    public function logout() {
+        $cookie_prefix = $this->getDbConfig('cookie_name');
+        $sid = Input::cookie($cookie_prefix.'_sid');
+
+        if($sid){
+            $logoutUrl = Environment::get('url') . '/' . $this->getConfig('contao.forum_pageAlias') . '/ucp.php?mode=logout&sid='.$sid;
+            $headers = $this->initForumRequestHeaders();
+            $browser = $this->initForumRequest();
+            $browser->get($logoutUrl, $headers);
+        } else {
+            System::log("Invalid try to logout user. No active session found.", __METHOD__, TL_ACCESS);
+        }
+
+    }
+
+    /**
      * Tries to login the User
+     *
+     * !!Only returns true if the user is not alreay logged in!!
      *
      * @param $username string
      * @param $password string
+     * @return bool
      */
     public function login($username, $password)
     {
@@ -104,7 +130,7 @@ class Connector
 
         // Try to login
         // @todo maybe better login through our connector?
-        $browser->submit($loginUrl, $formFields, RequestInterface::METHOD_POST, $headers);
+        $response = $browser->submit($loginUrl, $formFields, RequestInterface::METHOD_POST, $headers);
 
 
         // Parse cookies
@@ -123,17 +149,50 @@ class Connector
             }
         }
 
+
         // If we find a response cookie with user id and user id higher than 1 (anonym) everything went fine
         if($loginCookies[$cookie_prefix.'_u'] > 1){
+            System::log('Login to phpbb succeeded for '.$username, __METHOD__, TL_ACCESS);
             return true;
         }
 
+        System::log('Login to phpbb failed for '.$username, __METHOD__, TL_ACCESS);
         return false;
 
     }
 
-    public function importUser($username) {
-        // @todo continue here: Import phpbb user to contao
+    /**
+     * Imports a user from phpbb to contao
+     *
+     * @param $username
+     * @param $password
+     * @return bool
+     * @throws \Exception
+     */
+    public function importUser($username, $password) {
+
+        $user = $this->getUser($username);
+
+        if($user) {
+
+            System::log('Importing User '.$username, __METHOD__, TL_ACCESS);
+            $contaoUser = new MemberModel();
+
+            $contaoUser->username = $user['username'];
+            $contaoUser->email = $user['user_email'];
+            $contaoUser->firstname = 'Vorname';
+            $contaoUser->lastname = 'Nachname';
+            $contaoUser->password = Encryption::hash($password);
+            $contaoUser->login = 1;
+            $contaoUser->tstamp = $contaoUser->dateAdded = time();
+            $contaoUser->save();
+            System::log('User imported: '.$username, __METHOD__, TL_ACCESS);
+            return true;
+
+        } else {
+            System::log($username.' could not be found in phpbb db', __METHOD__, TL_ACCESS);
+            return false;
+        }
     }
 
     /**
@@ -161,7 +220,7 @@ class Connector
      * For Example the cookie_name
      *
      * @param $key
-     * @return array
+     * @return mixed
      */
     public function getDbConfig($key)
     {
@@ -172,7 +231,7 @@ class Connector
 
         $result = $this->db->fetchAssoc($queryBuilder->getSQL(), array($key));
 
-        return $result;
+        return $result['config_value'];
     }
 
     /**
