@@ -52,13 +52,53 @@ class Connector
         $this->config = Yaml::parse(file_get_contents(__DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/config/contao.yml'));
     }
 
+    /**
+     * Retrieves the currently logged in user
+     *
+     * Usage:
+     *
+     *      $phpbbuser = System::getContainer()->get('phpbb_bridge.connector')->getCurrentUser();
+     *      echo $phpbbuser->username
+     *      echo $phpbbuser->user_email
+     *      echo $phpbbuser->user_birthday
+     *
+     * @todo Should we check if frontend user is also logged in on contao side?
+     *
+     * @return object|null
+     * @throws \Exception
+     */
     public function getCurrentUser()
     {
+        // Checks session if user data is alreay initialized or tries to check status (which then set user data to session)
+        if(System::getContainer()->get('session')->get('phpbb_user') || $this->isLoggedIn()){
+            return System::getContainer()->get('session')->get('phpbb_user');
+        }
+        return null;
 
     }
 
     /**
-     * Check if the current user is logged in
+     * Retrieves a users data from phpbb
+     *
+     * @param $username
+     * @return array
+     */
+    public function getUser($username)
+    {
+        $queryBuilder = $this->db->createQueryBuilder()
+            ->select('*')
+            ->from($this->table_prefix . 'users', 'pu')
+            ->where('username = ?')
+            ->orWhere('username_clean = ?');
+
+
+        $result = $this->db->fetchAssoc($queryBuilder->getSQL(), array($username, $username));
+
+        return $result;
+    }
+
+    /**
+     * Check if the current user is logged in and append data to session
      *
      * @todo Implement caching?
      * @return bool
@@ -81,8 +121,8 @@ class Connector
         }
 
 
-        //dump($result->data);
-        //dump($result->logged_in);
+        System::getContainer()->get('session')->set('phpbb_user', $result->data);
+
 
         return (boolean)$result->logged_in;
     }
@@ -93,6 +133,8 @@ class Connector
     public function logout() {
         $cookie_prefix = $this->getDbConfig('cookie_name');
         $sid = Input::cookie($cookie_prefix.'_sid');
+
+        System::getContainer()->get('session')->remove('phpbb_user');
 
         if($sid){
             $logoutUrl = Environment::get('url') . '/' . $this->getConfig('contao.forum_pageAlias') . '/ucp.php?mode=logout&sid='.$sid;
@@ -109,6 +151,7 @@ class Connector
      * Tries to login the User
      *
      * !!Only returns true if the user is not alreay logged in!!
+     * @todo autologin / rememberme sync
      *
      * @param $username string
      * @param $password string
@@ -193,26 +236,6 @@ class Connector
             System::log($username.' could not be found in phpbb db', __METHOD__, TL_ACCESS);
             return false;
         }
-    }
-
-    /**
-     * Retrieves a users data from phpbb
-     *
-     * @param $username
-     * @return array
-     */
-    public function getUser($username)
-    {
-        $queryBuilder = $this->db->createQueryBuilder()
-            ->select('*')
-            ->from($this->table_prefix . 'users', 'pu')
-            ->where('username = ?')
-            ->orWhere('username_clean = ?');
-
-
-        $result = $this->db->fetchAssoc($queryBuilder->getSQL(), array($username, $username));
-
-        return $result;
     }
 
     /**

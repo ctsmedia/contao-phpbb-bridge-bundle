@@ -1,35 +1,40 @@
 {
-  "name": "ctsmedia/contao-phpbb-bridge-bundle",
-  "description": "phpbb 3.1 Bridge for Contao 4",
-  "type": "symfony-bundle",
-  "keywords": ["contao", "phpbb", "symfony", "forum"],
-  "license": "GPL v2",
-  "authors": [
-    {
-      "name": "Daniel Schwiperich",
-      "email": "d.schwiperich@cts-media.eu"
-    }
-  ],
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/ctsmedia/phpbb-app"
-    }
-  ],
-  "require": {
-    "php": ">=5.4",
-    "contao/core-bundle": "^4.0.4",
-    "kriswallsmith/buzz": "~0.15"
-  },
-  "require-dev": {
-    "contao/standard-edition": "^4.0.4",
-    "phpbb/phpbb":"dev-ticket/14211"
-  },
-  "autoload": {
-    "psr-4": {
-      "Ctsmedia\\Phpbb\\BridgeBundle\\": "src/"
-    }
-  },
-  "minimum-stability": "dev",
-  "prefer-stable": true
+    "name": "ctsmedia/contao-phpbb-bridge-bundle",
+    "description": "phpbb 3.1 Bridge for Contao 4",
+    "type": "symfony-bundle",
+    "keywords": [
+        "contao",
+        "phpbb",
+        "symfony",
+        "forum"
+    ],
+    "license": "GPL v2",
+    "authors": [
+        {
+            "name": "Daniel Schwiperich",
+            "email": "d.schwiperich@cts-media.eu"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/ctsmedia/phpbb-app"
+        }
+    ],
+    "require": {
+        "php": ">=5.4",
+        "contao/core-bundle": "^4.0.4",
+        "kriswallsmith/buzz": "~0.15"
+    },
+    "require-dev": {
+        "contao/standard-edition": "^4.0.4",
+        "phpbb/phpbb": "dev-ticket/14211"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ctsmedia\\Phpbb\\BridgeBundle\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

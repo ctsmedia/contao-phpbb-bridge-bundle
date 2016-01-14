@@ -12,7 +12,8 @@
         }
     ],
     "require": {
-        "php": ">=5.4"
+        "php": ">=5.4",
+        "kriswallsmith/buzz": "~0.15"
     },
     "extra": {
         "display-name": "Contao phpBB Bridge",
