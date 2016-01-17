@@ -2,5 +2,6 @@ parameters:
     contao.forum_pageId: ~
     contao.forum_pageUrl: ~
     contao.forum_pageAlias: ~
+    contao.url: ~
     contao.body_class: ~
     contao.load_dynamic_layout: ~

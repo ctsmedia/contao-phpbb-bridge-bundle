@@ -1,0 +1,3 @@
+ctsmedia_phpbb_bridge_controller:
+    resource: "@CtsmediaPhpbbBridgeBundle/Controller/"
+    type: annotation

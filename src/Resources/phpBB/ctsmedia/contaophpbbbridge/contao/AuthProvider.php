@@ -44,6 +44,8 @@ class AuthProvider extends db
     }
 
     /**
+     * Login a user to phpbb and on success also to contao
+     *
      * @param string $username
      * @param string $password
      * @return array
@@ -51,17 +53,24 @@ class AuthProvider extends db
     public function login($username, $password)
     {
         $result = parent::login($username, $password);
-        // We only do need to trigger contao login if the phpbb login was successful
+        // We only need to trigger contao login if the phpbb login was successful
+        // @todo is it so? Maybe we should interpret the result, especially if it was false???
         if($result['status'] == LOGIN_SUCCESS){
-            $this->contaoConnector->login($username, $password, true);
+            $this->contaoConnector->login($username, $password);
         }
 
         return $result;
     }
 
+    /**
+     * Logouts a user from phpbb and contao
+     *
+     * @param array $data
+     * @param bool $new_session
+     */
     public function logout($data, $new_session)
     {
         $this->contaoConnector->logout();
-        return parent::logout($data, $new_session);
+        parent::logout($data, $new_session);
     }
 }

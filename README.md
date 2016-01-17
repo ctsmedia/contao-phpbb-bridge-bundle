@@ -31,12 +31,12 @@ or:
 1. Add the bridge as dependency in your contao installation:
 `composer require ctsmedia/contao-phpbb-bridge-bundle`
 
-2. Modify the AppKernel.php and add the following to the registerBundles Method:
-`new Ctsmedia\\Phpbb\\BridgeBundle\\CtsmediaPhpbbBridgeBundle(),`
+2. Modify the **AppKernel.php** and add the following to the registerBundles Method:
+    `new Ctsmedia\\Phpbb\\BridgeBundle\\CtsmediaPhpbbBridgeBundle(),`
 
-  For Example:  
-  ```php
-   public function registerBundles()
+    For Example:  
+    ```php
+    public function registerBundles()
       {
           $bundles = [
               new Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
@@ -46,12 +46,19 @@ or:
               new Contao\NewsletterBundle\ContaoNewsletterBundle(),
               new Ctsmedia\Phpbb\BridgeBundle\CtsmediaPhpbbBridgeBundle(),
           ];
-  
+    
           ...
-  
+    
           return $bundles;
       }
-  ```
+    ```
+    
+    Add the phpbb Bridge routes to the contao installation. **Make sure this is added before the contao route bundle: ContaoCoreBundle:**
+    ```yml
+        CtsmediaPhpbbBridgeBundle:
+            resource: "@CtsmediaPhpbbBridgeBundle/Resources/config/routing.yml" 
+    ```
+    
 3. Login to the Contao Backend and create a Page of type 'PhpBB Forum Site' and configure it appropriate. You'll get some log messages of something fails / succeeds.
 Important is the alias and path to the forum. The Bridge module will create a symlink to it so you can access the forum right on. 
 

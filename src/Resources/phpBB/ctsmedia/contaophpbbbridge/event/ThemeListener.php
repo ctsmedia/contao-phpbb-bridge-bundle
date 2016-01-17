@@ -73,8 +73,8 @@ class ThemeListener implements EventSubscriberInterface
 
         // Load dynamic rendered layout sections (this is optional, otherwise static content will be used)
         if( true === (bool)$this->config['load_dynamic_layout']){
-            $jsonResponse = file_get_contents($this->config['forum_pageUrl'].'?format=json');
-            $sections = json_decode($jsonResponse);
+
+            $sections = $this->contaoConnector->loadLayout();
 
             if(isset($sections->overall_header)) {
                 $this->template->assign_var('CONTAO_LAYOUT_HEADER', $sections->overall_header);
@@ -95,22 +95,7 @@ class ThemeListener implements EventSubscriberInterface
             $this->template->append_var('BODY_CLASS', $this->config['body_class']);
         }
 
-
-
-//        echo "ContaoConnection";
-//
-//        dump($this->contaoConnector->getForumPageId());
-//
-//        echo "template";
-//
-//        dump(get_class($this->template));
-//        dump($this->template);
-//
-//
-//
-//        echo "event";
-//
-//        dump($event);
+        // $this->contaoConnector->test();
 
     }
 

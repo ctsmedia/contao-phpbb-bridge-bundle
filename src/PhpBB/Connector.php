@@ -22,6 +22,7 @@ use Contao\Input;
 use Contao\MemberModel;
 use Contao\System;
 use Doctrine\DBAL\Connection;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\Yaml\Yaml;
 
 
@@ -157,9 +158,10 @@ class Connector
      * @param $password string
      * @return bool
      */
-    public function login($username, $password)
+    public function login($username, $password, $forceToSend = false)
     {
 
+        // @todo login againt bridge controller
         $loginUrl = Environment::get('url') . '/' . $this->getConfig('contao.forum_pageAlias') . '/ucp.php?mode=login';
         $formFields = array(
             'username' => $username,
@@ -169,7 +171,7 @@ class Connector
             'login' => 'Login'
         );
         $headers = $this->initForumRequestHeaders();
-        $browser = $this->initForumRequest();
+        $browser = $this->initForumRequest($forceToSend);
 
         // Try to login
         // @todo maybe better login through our connector?
@@ -293,7 +295,7 @@ class Connector
     /**
      * @return Browser
      */
-    protected function initForumRequest()
+    protected function initForumRequest($force = false)
     {
         // Init Request
         $client = new Curl();
@@ -302,6 +304,13 @@ class Connector
         $browser->setClient($client);
         $cookieListener = new CookieListener();
         $browser->addListener($cookieListener);
+
+        // We need to make sure that the if the original Request is already coming from the forum, we then are not
+        // allowed to send a request to the forum so we create a login loop for example.
+        if($force === false && System::getContainer()->get('request')->headers->get('x-requested-with') == 'ContaoPhpbbBridge'){
+            System::log('Bridge Request Recursion detected', __METHOD__, TL_ERROR);
+            throw new TooManyRequestsHttpException(null, 'Internal recursion Bridge requests detected');
+        }
 
         return $browser;
     }
@@ -318,7 +327,14 @@ class Connector
             $headers[] = 'User-Agent: ' . $req->headers->get('user-agent');
         }
         if ($req->headers->get('x-forwarded-for')) {
-            $headers[] = 'X-Forwarded-For: ' . $req->headers->get('x-forwarded-for') . ', ' . Environment::get('server');
+            //split by comma+space
+            $forwardIps = explode(", ", $req->headers->get('x-forwarded-for'));
+            //add the server ip
+            $forwardIps[] = Environment::get('server');
+            //set X-Forwarded-For after imploding the array into a comma+space separated string
+            $headers[] = 'X-Forwarded-For: ' . implode(", ", array_unique($forwardIps));
+        } else {
+            $headers[] = 'X-Forwarded-For: ' .Environment::get('ip') . ', ' .Environment::get('server');
         }
         if ($req->headers->get('cookie')) {
             $headers[] = 'Cookie: ' . $req->headers->get('cookie');
@@ -326,6 +342,7 @@ class Connector
         if ($req->headers->get('referer')) {
             $headers[] = 'Referer: ' . $req->headers->get('referer');
         }
+        $headers[] = 'X-Requested-With: ContaoPhpbbBridge';
 
         return $headers;
     }

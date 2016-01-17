@@ -100,6 +100,7 @@ class tl_page_phpbbforum extends tl_page {
         System::getContainer()->get('phpbb_bridge.connector')->updateConfig(array(
             'contao.forum_pageId' => $dc->activeRecord->id,
             'contao.forum_pageUrl' => Environment::get('url').'/'.$url,
+            'contao.url' => Environment::get('url'),
             'contao.load_dynamic_layout' => $dc->activeRecord->phpbb_dynamic_layout,
             'contao.forum_pageAlias' => $dc->activeRecord->phpbb_alias,
         ));
@@ -115,8 +116,6 @@ class tl_page_phpbbforum extends tl_page {
         }
 
         Message::addInfo("Generating Layout");
-
-        //dump($dc->activeRecord->phpbb_dynamic_layout);
 
         $row = $dc->activeRecord->row();
         $row['skipInternalHook'] = true;
