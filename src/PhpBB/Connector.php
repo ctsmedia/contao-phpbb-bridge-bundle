@@ -259,6 +259,18 @@ class Connector
         return $result['config_value'];
     }
 
+    public function updateDbConfig($key, $value) {
+        $queryBuilder = $this->db->createQueryBuilder()
+            ->update($this->table_prefix . 'config', 'co')
+            ->set('config_value', $value)
+            ->where('config_name = :key')
+            ->setParameter('key', $key);
+        $result = $queryBuilder->execute();
+
+        return $result;
+
+    }
+
     /**
      * Returns specific config key
      *
