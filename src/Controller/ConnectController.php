@@ -11,7 +11,7 @@
 
 namespace Ctsmedia\Phpbb\BridgeBundle\Controller;
 
-use Contao\CoreBundle\ContaoCoreBundle;
+use Contao\CoreBundle\Exception\AccessDeniedException;
 use Contao\Environment;
 use Contao\FrontendIndex;
 use Contao\FrontendUser;
@@ -23,6 +23,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 
 /**
@@ -30,7 +31,7 @@ use Symfony\Component\HttpFoundation\Request;
  * @package Ctsmedia\Phpbb\BridgeBundle\Controller
  * @author Daniel Schwiperich <d.schwiperich@cts-media.eu>
  *
- * @Route("/phpbb_bridge")
+ * @Route("/phpbb_bridge", defaults={"_scope" = "frontend"})
  */
 class ConnectController extends Controller
 {
@@ -42,37 +43,36 @@ class ConnectController extends Controller
 
     /**
      * Call this function to validate the incoming request
+     * @todo move the validation in symfony security firewall authentication provider or request_matcher ?
      */
-    protected function validateRequest() {
-        $this->container->enterScope(ContaoCoreBundle::SCOPE_FRONTEND);
+    protected function validateRequest()
+    {
+        // Initialize Contao
         $this->container->get('contao.framework')->initialize(); // we need to do this for autoloading contao classes
         $req = $this->container->get('request');
         /* @var $req Request */
 
         // Only requests from the bridge itself are allowed. Check if the specific header is set
-        if($req->headers->get('x-requested-with') != 'ContaoPhpbbBridge') {
-            System::log('Not allowed to access phpbb bridge', __METHOD__, TL_ERROR);
-            //throw new AccessDeniedException('Not allowed to access phpbb bridge');
+        if ($req->headers->get('x-requested-with') != 'ContaoPhpbbBridge') {
+            System::log('Not allowed to access phpbb bridge. Seems not coming fron the bridge', __METHOD__, TL_ERROR);
+            throw new AccessDeniedException('Not allowed to access phpbb bridge');
         }
         // The bridge also always sets a internal proxy header
-        if(!$req->headers->get('x-forwarded-for')) {
+        if (!$req->headers->get('x-forwarded-for')) {
             System::log('Not allowed to access phpbb bridge without proxy header', __METHOD__, TL_ERROR);
-            //throw new AccessDeniedException('Not allowed to access phpbb bridge without proxy header');
+            throw new AccessDeniedException('Not allowed to access phpbb bridge without proxy header');
         }
+
+        // Make sure we have an internat request
+        // we cannot use $req->server->get('REMOTE_ADDR') here, because symfone alters it
+        if($_SERVER['REMOTE_ADDR'] != Environment::get('server') ){
+            System::log('IPs did not match. clientIP: '.
+                $req->getClientIp().'| EnvClientIp '.Environment::get('ip').'| EnvServerIp '.Environment::get('server'),
+            __METHOD__, TL_ERROR);
+            throw new AccessDeniedException('Not allowed to access phpbb bridge without proxy header');
+        }
+
         $req->attributes->set('isInternalForumRequest', true);
-
-        // Contao 4.1 currently does not support proxy headers so we've to overwrite the client ip with the true one
-        if($req->headers->get('x-forwarded-for')){
-            $clientIP = explode(", ",$req->headers->get('x-forwarded-for'))[0];
-        } else {
-            $clientIP = $req->getClientIp();
-        }
-
-        // Add the real client Ip to the trusted proxies one
-        $req->setTrustedProxies(array($clientIP));
-        // x-forward-for header is not supported yet, so we overwrite the client Ip manually
-        // @todo report bug report
-        Environment::set('ip', $clientIP);
         $this->frontendIndex = new FrontendIndex();
 
     }
@@ -81,8 +81,12 @@ class ConnectController extends Controller
      *
      * @Route("/test")
      */
-    public function test(){
-//        $this->validateRequest();
+    public function testAction()
+    {
+        $this->validateRequest();
+
+        return new Response();
+
 //        $content = dump(Config::get('disableIpCheck'));
 //
 //        $response = new Response();
@@ -100,7 +104,8 @@ class ConnectController extends Controller
      * @todo implement authentication to access API (token, digest, basic...). Maybe not needed since we recheck credentials during login process against phpbb
      *
      */
-    public function loginAction(){
+    public function loginAction()
+    {
         $this->validateRequest();
         //dump(Config::get('disableIpCheck'));
 
@@ -109,7 +114,7 @@ class ConnectController extends Controller
 
         $response = new JsonResponse();
         $response->setData(array(
-           'login_status' => $result
+            'login_status' => $result
         ));
 
         return $response;
@@ -120,7 +125,8 @@ class ConnectController extends Controller
      *
      * @Route("/logout")
      */
-    public function logoutAction(){
+    public function logoutAction()
+    {
         $this->validateRequest();
         $user = FrontendUser::getInstance();
         $result = $user->logout();
@@ -137,13 +143,14 @@ class ConnectController extends Controller
      *
      * @Route("/layout")
      */
-    public function layoutAction(){
+    public function layoutAction()
+    {
         $this->validateRequest();
 
         $objPage = PageModel::findOneByType('phpbb_forum');
         Environment::set('relativeRequest', $objPage->alias);
         $response = $this->frontendIndex->run();
-        if($objPage instanceof  PageModel){
+        if ($objPage instanceof PageModel) {
             $page = new Forum();
             Input::setGet('format', 'json');
             $response = $page->getResponse($objPage);

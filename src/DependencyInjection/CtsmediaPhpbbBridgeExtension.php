@@ -31,6 +31,7 @@ class CtsmediaPhpbbBridgeExtension extends ConfigurableExtension
             new FileLocator(__DIR__.'/../Resources/config')
         );
         $loader->load('services.yml');
+        $loader->load('listener.yml');
 
         $container->setParameter('phpbb_bridge.dir', $mergedConfig['dir']);
         $container->setParameter('phpbb_bridge.db.table_prefix', $mergedConfig['db']['table_prefix']);

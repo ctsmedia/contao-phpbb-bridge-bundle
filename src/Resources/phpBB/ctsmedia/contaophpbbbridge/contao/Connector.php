@@ -54,7 +54,7 @@ class Connector
         $headers = $this->initContaoRequestHeaders();
         $response = $browser->get($this->contao_url.'/phpbb_bridge/test', $headers);
 
-        dump($response->getContent());
+        //dump($response->getContent());
         echo $response->getContent();
         exit;
 
@@ -192,15 +192,11 @@ class Connector
         if ($this->request->header('User-Agent')) {
             $headers[] = 'User-Agent: ' . $this->request->header('User-Agent');
         }
+        // Set the forward header. Our own IP gets added automatically (by the client?)
         if ($this->request->header('X-Forwarded-For')) {
-            //split by comma+space
-            $forwardIps = explode(", ", $this->request->header('X-Forwarded-For'));
-            //add the server ip
-            $forwardIps[] = $this->request->server('SERVER_ADDR');
-            //set X-Forwarded-For after imploding the array into a comma+space separated string
-            $headers[] = 'X-Forwarded-For: ' . implode(", ", array_unique($forwardIps));
+            $headers[] = 'X-Forwarded-For: ' . $this->request->header('X-Forwarded-For');
         } else {
-            $headers[] = 'X-Forwarded-For: ' . $this->request->server('REMOTE_ADDR') . ', ' . $this->request->server('SERVER_ADDR');
+            $headers[] = 'X-Forwarded-For: ' . $this->request->server('REMOTE_ADDR');
         }
         if ($this->request->header('Cookie')) {
             $headers[] = 'Cookie: ' . $this->request->header('Cookie');

@@ -1,0 +1,6 @@
+services:
+# A high prio is needed so this gets triggered before Contao.Authentication where ip is already set
+    phpbb_bridge.listener.bypass_proxy:
+        class: Ctsmedia\Phpbb\BridgeBundle\EventListener\BypassProxyListener
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, priority: 10 }
