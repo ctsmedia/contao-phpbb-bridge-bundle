@@ -87,7 +87,7 @@ class Connector
      *      echo $phpbbuser->user_birthday
      *
      * @param $username
-     * @return object|false
+     * @return object|null
      */
     public function getUser($username)
     {
