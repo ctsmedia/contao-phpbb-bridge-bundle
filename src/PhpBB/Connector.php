@@ -81,8 +81,13 @@ class Connector
     /**
      * Retrieves a users data from phpbb
      *
+     *      $phpbbuser = System::getContainer()->get('phpbb_bridge.connector')->getUser('name_of_user');
+     *      echo $phpbbuser->username
+     *      echo $phpbbuser->user_email
+     *      echo $phpbbuser->user_birthday
+     *
      * @param $username
-     * @return array
+     * @return object|false
      */
     public function getUser($username)
     {
@@ -94,6 +99,14 @@ class Connector
 
 
         $result = $this->db->fetchAssoc($queryBuilder->getSQL(), array($username, $username));
+
+        if($result) {
+            $result = (object)$result;
+        } else {
+            $result = null;
+        }
+
+
 
         return $result;
     }
