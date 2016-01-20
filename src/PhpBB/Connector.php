@@ -125,7 +125,7 @@ class Connector
 
         // @todo load path from routing.yml
         $path = '/contao_connect/is_logged_in';
-        $jsonResponse = $browser->get(Environment::get('url') . '/' . $this->getConfig('contao.forum_pageAlias') . $path, $headers);
+        $jsonResponse = $browser->get(Environment::get('url') . '/' . $this->getForumPath() . $path, $headers);
 
         if($jsonResponse->getHeader('content-type') == 'application/json') {
             $result = json_decode($jsonResponse->getContent());
@@ -151,7 +151,7 @@ class Connector
         System::getContainer()->get('session')->remove('phpbb_user');
 
         if($sid){
-            $logoutUrl = Environment::get('url') . '/' . $this->getConfig('contao.forum_pageAlias') . '/ucp.php?mode=logout&sid='.$sid;
+            $logoutUrl = Environment::get('url') . '/' . $this->getForumPath() . '/ucp.php?mode=logout&sid='.$sid;
             $headers = $this->initForumRequestHeaders();
             $browser = $this->initForumRequest();
             $browser->get($logoutUrl, $headers);
@@ -175,7 +175,7 @@ class Connector
     {
 
         // @todo login againt bridge controller
-        $loginUrl = Environment::get('url') . '/' . $this->getConfig('contao.forum_pageAlias') . '/ucp.php?mode=login';
+        $loginUrl = Environment::get('url') . '/' . $this->getForumPath() . '/ucp.php?mode=login';
         $formFields = array(
             'username' => $username,
             'password' => $password,
@@ -285,14 +285,29 @@ class Connector
     }
 
     /**
-     * Returns specific config key
+     * Alias method to the forum path easily
+     */
+    public function getForumPath() {
+       return $this->getBridgeConfig('forum_pageAlias');
+    }
+
+    /**
+     * Returns specific config key from the bridge config
+     * 
+     * Keys:
+     * forum_pageId: PageId for the Bridge Page Type => f.e. 39
+     * forum_pageUrl: Full url to the page => f.e. 'http://phpbbbridge.contao.local/39.html'
+     * forum_pageAlias: Path to the forum for accessable urls f.e. 'phpbb' so the forum is accessable under 'http://phpbbbridge.contao.local/phpbb/index.php'
+     * url: Main Url f.e. http://phpbbbridge.contao.local
+     * body_class: String - From the layout configuration
+     * load_dynamic_layout: 1|0
      *
      * @return mixed|null
      */
-    public function getConfig($key)
+    public function getBridgeConfig($key)
     {
-        if (array_key_exists($key, $this->config['parameters'])) {
-            return $this->config['parameters'][$key];
+        if (array_key_exists('contao.'.$key, $this->config['parameters'])) {
+            return $this->config['parameters']['contao.'.$key];
         }
         return null;
     }
