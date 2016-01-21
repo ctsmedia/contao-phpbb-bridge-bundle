@@ -3,6 +3,27 @@ phpbb 3.1 Bridge for Contao 4
 
 **not stable yet**
 
+## Known Issues \ Limitations
+
+1. The bridge is not compatible to the contao dev mode (only in the forum area)
+
+## FAQs - Problem solving
+
+### *Q:* Layout is not generated in Forum area
+*A:* Make sure you've setup the phpbb site in contao correctly 
+and *that the path to the layout are writeable*, meanging the `phpbbroot/ext/ctsmedia/contaophpbbbridge/styles/all/template/event`
+ 
+### *Q:* Login is not working
+*A:* 
+1. Make sure you've setup the phpbb site in contao correctly
+2. Make sure the Cookie Domain setting in phpbb is matching the contao domain. See Config Section below.
+3. clear the caches on both sides. Often the problems are caused by outdated config files which are cached by both systems
+
+
+### *Q:* It's still not working
+*A:* You may have found a bug. Open a Issue and be as descriptive as possible and attach relevant error logs if possible
+
+
 ## Installation 
 
 ### Prerequisites
@@ -58,14 +79,18 @@ or:
         CtsmediaPhpbbBridgeBundle:
             resource: "@CtsmediaPhpbbBridgeBundle/Resources/config/routing.yml" 
     ```
+
+3. Go to module subfolder `contaoroot/vendor/ctsmedia/contao-phpbb-bridge-bundle/src/Resources/phpBB/ctsmedia/contaophpbbbridge` and run `composer install`
+This will install a needed http library to communicate with contao. phpbb is currently not able to install module dependencies by itself. 
+In release versions we will pre compile the dependencies for phpbb 
     
-3. Login to the Contao Backend and create a Page of type 'PhpBB Forum Site' and configure it appropriate. You'll get some log messages of something fails / succeeds.
+4. Login to the Contao Backend and create a Page of type 'PhpBB Forum Site' and configure it appropriate. You'll get some log messages of something fails / succeeds.
 Important is the alias and path to the forum. The Bridge module will create a symlink to it so you can access the forum right on. 
 
-4. Once Contao has made the link to forum login to the admin panel of phpbb and activate the contao extension under `Customize -> Manage Extensions`
+5. Once Contao has made the link to forum login to the admin panel of phpbb and activate the contao extension under `Customize -> Manage Extensions`
 If the module doesn't appear, purge the cache (`General -> Find 'Purge the cache' and click Run now`)
 
-5. At this moment the bridge is already capable of synching your countao frontend login with phpbb. To sync also the logins made via the phpbb forums you've to enable the bridge auth provider.
+6. At this moment the bridge is already capable of synching your countao frontend login with phpbb. To sync also the logins made via the phpbb forums you've to enable the bridge auth provider.
 Goto `General -> Authentication` in the Adminpanel and choose *Contao* in the select feld. 
 If this entry doesn't appear yet, purge the cache (`General -> Find 'Purge the cache' and click Run now`)
 
@@ -80,15 +105,21 @@ Especially if you use dynamic layout rendering
 
 ##### Forum Page Type
 
-TODO: Explain alias
-TODO: Explain path
-TODO: css class
-TODO: dynamic_layout
+* TODO: Explain alias
+* TODO: Explain path
+* TODO: css class
+* TODO: dynamic_layout
 
 
 #### phpBB
 
-See step 4 and 5 of installation process
+See step 5 and 6 of installation process
+
+ * Cookie Settings -> **Make sure the cookie domain is matching the contao website domain** Otherwise login sync will not work 
+ * Security Settings -> **Maximum number of login attempts per IP address:** set to 0 (could possibly lockout the bridge logins)
+ * Security Settings -> **Validate X_FORWARDED_FOR header:** set to NO (could possibly lockout the bridge)
+ * *During Development:* Load Settings -> **Recompile stale style components:** to YES
+ 
 
 #### Files
 
