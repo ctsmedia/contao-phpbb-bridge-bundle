@@ -236,8 +236,8 @@ class Connector
             System::log('Importing User '.$username, __METHOD__, TL_ACCESS);
             $contaoUser = new MemberModel();
 
-            $contaoUser->username = $user['username'];
-            $contaoUser->email = $user['user_email'];
+            $contaoUser->username = $user->username;
+            $contaoUser->email = $user->user_email;
             $contaoUser->firstname = 'Vorname';
             $contaoUser->lastname = 'Nachname';
             $contaoUser->password = Encryption::hash($password);
