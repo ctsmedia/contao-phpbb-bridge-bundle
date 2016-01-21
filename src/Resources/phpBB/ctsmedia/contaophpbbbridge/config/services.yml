@@ -23,6 +23,7 @@ services:
         class: ctsmedia\contaophpbbbridge\controller\Connect
         arguments:
             - @config
+            - @service_container
             - @dispatcher
             - @user
             - @ctsmedia.contaophpbbbridge.connector

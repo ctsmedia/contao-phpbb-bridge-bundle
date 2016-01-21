@@ -16,11 +16,14 @@ use phpbb\config\config;
 use phpbb\event\dispatcher;
 use phpbb\user;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 
 /**
+ *
+ * @todo security: make this only accessible for contao requests.
  *
  * @package ctsmedia\contaophpbbbridge\controller
  * @author Daniel Schwiperich <d.schwiperich@cts-media.eu>
@@ -36,9 +39,10 @@ class Connect
     protected $rootPath;
     protected $phpExt;
 
-    public function __construct(config $config, dispatcher $dispatcher, user $user, Connector $contaoConnector, $root_path, $php_ext)
+    public function __construct(config $config, ContainerInterface $container, dispatcher $dispatcher, user $user, Connector $contaoConnector, $root_path, $php_ext)
     {
         $this->config = $config;
+        $this->container = $container;
         $this->dispatcher = $dispatcher;
         $this->user = $user;
         $this->contaoConnector = $contaoConnector;
@@ -58,6 +62,17 @@ class Connect
             'logged_in' => (($this->user->data['user_id'] != ANONYMOUS) ? true : false),
             'data' => $this->user->data
         ));
+
+        return $response;
+    }
+
+    /**
+     * Purges the phpbb cache
+     */
+    public function purgeCache(){
+        $this->container->get('cache')->purge();
+
+        $response = new Response();
 
         return $response;
     }

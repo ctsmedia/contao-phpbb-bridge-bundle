@@ -313,7 +313,12 @@ class Connector
     }
 
 
-    public function updateConfig(array $config)
+    /**
+     * Updates bridge config for phpbb
+     *
+     * @param array $config
+     */
+    public function updateConfig(array $config, $clearPhpbbCache = true)
     {
         $currentConfig = $this->config;
         $isChanged = false;
@@ -328,8 +333,25 @@ class Connector
         if ($isChanged === true) {
             file_put_contents(__DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/config/contao.yml',
                 Yaml::dump($currentConfig));
+
+            if($clearPhpbbCache === true) {
+                $this->clearForumCache();
+            }
         }
 
+    }
+
+    /**
+     * Sends a request to the forum to clear its cache.
+     * Useful when config has changed for example
+     */
+    public function clearForumCache(){
+        $browser = $this->initForumRequest();
+        $headers = $this->initForumRequestHeaders();
+
+        // @todo load path from routing.yml?
+        $path = '/contao_connect/purge_cache';
+        $browser->get(Environment::get('url') . '/' . $this->getForumPath() . $path, $headers);
     }
 
     /**
