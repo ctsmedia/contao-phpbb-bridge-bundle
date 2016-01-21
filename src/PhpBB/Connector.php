@@ -106,7 +106,28 @@ class Connector
             $result = null;
         }
 
+        return $result;
+    }
 
+    /**
+     * Retrieves User Profile Data by a given userId
+     *
+     * @param int $userId
+     * @return object|null
+     */
+    public function getUserProfile($userId){
+        $queryBuilder = $this->db->createQueryBuilder()
+            ->select('*')
+            ->from($this->table_prefix . 'profile_fields_data', 'pf')
+            ->where('user_id = ?');
+
+        $result = $this->db->fetchAssoc($queryBuilder->getSQL(), array($userId));
+
+        if($result) {
+            $result = (object)$result;
+        } else {
+            $result = null;
+        }
 
         return $result;
     }
