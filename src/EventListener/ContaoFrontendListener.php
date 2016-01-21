@@ -51,9 +51,10 @@ class ContaoFrontendListener
     public function onImportUser($username, $password, $scope)
     {
         if ($scope == 'tl_member') {
-            $loginResult = System::getContainer()->get('phpbb_bridge.connector')->login($username, $password);
+            $loginResult = System::getContainer()->get('phpbb_bridge.connector')->login($username, $password, true);
             // Only import user if login to forum succeeded
             if ($loginResult === true) {
+                System::log("Importing User: ".$username, __METHOD__ ,TL_ACCESS);
                 // Try to import the user to contao (tl_member / frontend)
                 $importResult = System::getContainer()->get('phpbb_bridge.connector')->importUser($username, $password);
                 return $importResult; // Should usually be true
