@@ -52,10 +52,10 @@ class Connector
         $this->db = $db;
         $this->table_prefix = System::getContainer()->getParameter('phpbb_bridge.db.table_prefix');
         $configFile = __DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/config/contao.yml';
-        if(is_file($configFile)){
+        if (is_file($configFile)) {
             $this->config = Yaml::parse(file_get_contents($configFile));
         } else {
-            $this->config = Yaml::parse(file_get_contents($configFile.'.dist'));
+            $this->config = Yaml::parse(file_get_contents($configFile . '.dist'));
         }
 
     }
@@ -78,7 +78,7 @@ class Connector
     public function getCurrentUser()
     {
         // Checks session if user data is alreay initialized or tries to check status (which then set user data to session)
-        if(System::getContainer()->get('session')->get('phpbb_user') || $this->isLoggedIn()){
+        if (System::getContainer()->get('session')->get('phpbb_user') || $this->isLoggedIn()) {
             return System::getContainer()->get('session')->get('phpbb_user');
         }
         return null;
@@ -107,7 +107,7 @@ class Connector
 
         $result = $this->db->fetchAssoc($queryBuilder->getSQL(), array($username, $username));
 
-        if($result) {
+        if ($result) {
             $result = (object)$result;
         } else {
             $result = null;
@@ -122,7 +122,8 @@ class Connector
      * @param int $userId
      * @return object|null
      */
-    public function getUserProfile($userId){
+    public function getUserProfile($userId)
+    {
         $queryBuilder = $this->db->createQueryBuilder()
             ->select('*')
             ->from($this->table_prefix . 'profile_fields_data', 'pf')
@@ -130,7 +131,7 @@ class Connector
 
         $result = $this->db->fetchAssoc($queryBuilder->getSQL(), array($userId));
 
-        if($result) {
+        if ($result) {
             $result = (object)$result;
         } else {
             $result = null;
@@ -155,11 +156,12 @@ class Connector
         $path = '/contao_connect/is_logged_in';
         $jsonResponse = $browser->get(Environment::get('url') . '/' . $this->getForumPath() . $path, $headers);
 
-        if($jsonResponse->getHeader('content-type') == 'application/json') {
+        if ($jsonResponse->getHeader('content-type') == 'application/json') {
             $result = json_decode($jsonResponse->getContent());
         } else {
-            System::log("Could not communicate with forum. JSON Response expected. Got: ".$jsonResponse->getHeader('content-type'), __METHOD__, TL_ERROR);
-            throw new \Exception("Could not communicate with forum. JSON Response expected. Got: ".$jsonResponse->getHeader('content-type'));
+            System::log("Could not communicate with forum. JSON Response expected. Got: " . $jsonResponse->getHeader('content-type'),
+                __METHOD__, TL_ERROR);
+            throw new \Exception("Could not communicate with forum. JSON Response expected. Got: " . $jsonResponse->getHeader('content-type'));
         }
 
 
@@ -172,14 +174,15 @@ class Connector
     /**
      * Logout from phpbb
      */
-    public function logout() {
+    public function logout()
+    {
         $cookie_prefix = $this->getDbConfig('cookie_name');
-        $sid = Input::cookie($cookie_prefix.'_sid');
+        $sid = Input::cookie($cookie_prefix . '_sid');
 
         System::getContainer()->get('session')->remove('phpbb_user');
 
-        if($sid){
-            $logoutUrl = Environment::get('url') . '/' . $this->getForumPath() . '/ucp.php?mode=logout&sid='.$sid;
+        if ($sid) {
+            $logoutUrl = Environment::get('url') . '/' . $this->getForumPath() . '/ucp.php?mode=logout&sid=' . $sid;
             $headers = $this->initForumRequestHeaders();
             $browser = $this->initForumRequest();
             $browser->get($logoutUrl, $headers);
@@ -230,19 +233,19 @@ class Connector
                 $cookie->getAttribute('path'), $cookie->getAttribute('domain'));
 
             // Get phpbb cookies
-            if(strpos($cookie->getName(), $cookie_prefix) !== false) {
+            if (strpos($cookie->getName(), $cookie_prefix) !== false) {
                 $loginCookies[$cookie->getName()] = $cookie->getValue();
             }
         }
 
 
         // If we find a response cookie with user id and user id higher than 1 (anonym) everything went fine
-        if($loginCookies[$cookie_prefix.'_u'] > 1){
-            System::log('Login to phpbb succeeded for '.$username, __METHOD__, TL_ACCESS);
+        if ($loginCookies[$cookie_prefix . '_u'] > 1) {
+            System::log('Login to phpbb succeeded for ' . $username, __METHOD__, TL_ACCESS);
             return true;
         }
 
-        System::log('Login to phpbb failed for '.$username, __METHOD__, TL_ACCESS);
+        System::log('Login to phpbb failed for ' . $username, __METHOD__, TL_ACCESS);
         return false;
 
     }
@@ -255,13 +258,14 @@ class Connector
      * @return bool
      * @throws \Exception
      */
-    public function importUser($username, $password) {
+    public function importUser($username, $password)
+    {
 
         $user = $this->getUser($username);
 
-        if($user) {
+        if ($user) {
 
-            System::log('Importing User '.$username, __METHOD__, TL_ACCESS);
+            System::log('Importing User ' . $username, __METHOD__, TL_ACCESS);
             $contaoUser = new MemberModel();
 
             $contaoUser->username = $user->username;
@@ -272,11 +276,11 @@ class Connector
             $contaoUser->login = 1;
             $contaoUser->tstamp = $contaoUser->dateAdded = time();
             $contaoUser->save();
-            System::log('User imported: '.$username, __METHOD__, TL_ACCESS);
+            System::log('User imported: ' . $username, __METHOD__, TL_ACCESS);
             return true;
 
         } else {
-            System::log($username.' could not be found in phpbb db', __METHOD__, TL_ACCESS);
+            System::log($username . ' could not be found in phpbb db', __METHOD__, TL_ACCESS);
             return false;
         }
     }
@@ -300,7 +304,8 @@ class Connector
         return $result['config_value'];
     }
 
-    public function updateDbConfig($key, $value) {
+    public function updateDbConfig($key, $value)
+    {
         $queryBuilder = $this->db->createQueryBuilder()
             ->update($this->table_prefix . 'config', 'co')
             ->set('config_value', $value)
@@ -315,13 +320,14 @@ class Connector
     /**
      * Alias method to the forum path easily
      */
-    public function getForumPath() {
-       return $this->getBridgeConfig('forum_pageAlias');
+    public function getForumPath()
+    {
+        return $this->getBridgeConfig('forum_pageAlias');
     }
 
     /**
      * Returns specific config key from the bridge config
-     * 
+     *
      * Keys:
      * forum_pageId: PageId for the Bridge Page Type => f.e. 39
      * forum_pageUrl: Full url to the page => f.e. 'http://phpbbbridge.contao.local/39.html'
@@ -334,8 +340,8 @@ class Connector
      */
     public function getBridgeConfig($key)
     {
-        if (array_key_exists('contao.'.$key, $this->config['parameters'])) {
-            return $this->config['parameters']['contao.'.$key];
+        if (array_key_exists('contao.' . $key, $this->config['parameters'])) {
+            return $this->config['parameters']['contao.' . $key];
         }
         return null;
     }
@@ -350,26 +356,38 @@ class Connector
     {
         $currentConfig = $this->config;
         $isChanged = false;
+        $configFile = __DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/config/contao.yml';
+        $distConfig = null;
 
+        // Check for changed config values
         foreach ($config as $key => $value) {
+            // test existing parameters
             if (array_key_exists($key, $currentConfig['parameters'])) {
-                $currentConfig['parameters'][$key] = $value;
-                $isChanged = true;
+                if ($currentConfig['parameters'][$key] != $value) {
+                    $currentConfig['parameters'][$key] = $value;
+                    $isChanged = true;
+                }
+            // if a new parameter is found, make sure it's a valid one (testing against contao.yml.dist)
+            } else {
+                if(!$distConfig) $distConfig = Yaml::parse(file_get_contents($configFile . '.dist'));
+                if(array_key_exists($key, $distConfig['parameters'])){
+                    $currentConfig['parameters'][$key] = $value;
+                    $isChanged = true;
+                }
             }
         }
 
         if ($isChanged === true) {
-            $configFile = __DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/config/contao.yml';
             $result = file_put_contents($configFile, Yaml::dump($currentConfig));
 
-            if(!($result > 0)){
-                throw new IOException('Could not write bidge config file '.$configFile);
+            if (!($result > 0)) {
+                throw new IOException('Could not write bidge config file ' . $configFile);
             }
 
             // We've to load the new / updated config now for future processing
             $this->config = Yaml::parse(file_get_contents($configFile));
 
-            if($clearPhpbbCache === true) {
+            if ($clearPhpbbCache === true) {
                 $this->clearForumCache();
             }
         }
@@ -380,7 +398,8 @@ class Connector
      * Sends a request to the forum to clear its cache.
      * Useful when config has changed for example
      */
-    public function clearForumCache(){
+    public function clearForumCache()
+    {
         $browser = $this->initForumRequest();
         $headers = $this->initForumRequestHeaders();
 
@@ -404,7 +423,7 @@ class Connector
 
         // We need to make sure that the if the original Request is already coming from the forum, we then are not
         // allowed to send a request to the forum so we create a login loop for example.
-        if($force === false && System::getContainer()->get('request')->headers->get('x-requested-with') == 'ContaoPhpbbBridge'){
+        if ($force === false && System::getContainer()->get('request')->headers->get('x-requested-with') == 'ContaoPhpbbBridge') {
             System::log('Bridge Request Recursion detected', __METHOD__, TL_ERROR);
             throw new TooManyRequestsHttpException(null, 'Internal recursion Bridge requests detected');
         }
@@ -431,7 +450,7 @@ class Connector
             //set X-Forwarded-For after imploding the array into a comma+space separated string
             $headers[] = 'X-Forwarded-For: ' . implode(", ", array_unique($forwardIps));
         } else {
-            $headers[] = 'X-Forwarded-For: ' .Environment::get('ip') . ', ' .Environment::get('server');
+            $headers[] = 'X-Forwarded-For: ' . Environment::get('ip') . ', ' . Environment::get('server');
         }
         if ($req->headers->get('cookie')) {
             $headers[] = 'Cookie: ' . $req->headers->get('cookie');
