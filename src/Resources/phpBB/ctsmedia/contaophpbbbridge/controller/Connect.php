@@ -19,6 +19,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Acl\Exception\Exception;
 
 
 /**
@@ -48,6 +49,7 @@ class Connect
         $this->contaoConnector = $contaoConnector;
         $this->rootPath = $root_path;
         $this->phpExt = $php_ext;
+
     }
 
     /**
@@ -70,9 +72,36 @@ class Connect
      * Purges the phpbb cache
      */
     public function purgeCache(){
-        $this->container->get('cache')->purge();
+        $response =  new JsonResponse();
+        $status = true;
+        $data = [];
 
-        $response = new Response();
+        try {
+            $this->container->get('cache')->purge();
+        } catch(Exception $e){
+            $status = false;
+            $data['error_message'] = $e->getMessage();
+        }
+
+        $response->setData(array(
+            'status' => $status,
+            'data' => $data
+        ));
+
+        return $response;
+    }
+
+    /**
+     *
+     * @Route("/test")
+     */
+    public function test()
+    {
+        $response =  new JsonResponse();
+        $response->setData(array(
+            'status' => $this->contaoConnector->isInstalled(),
+            'data' => []
+        ));
 
         return $response;
     }

@@ -4,3 +4,6 @@ ctsmedia_contaophpbbbridge_controller_is_logged_in:
 ctsmedia_contaophpbbbridge_controller_purge_cache:
         path: /contao_connect/purge_cache
         defaults: { _controller: ctsmedia.contaophpbbbridge.controller:purgeCache }
+ctsmedia_contaophpbbbridge_controller_test:
+        path: /contao_connect/test
+        defaults: { _controller: ctsmedia.contaophpbbbridge.controller:test }

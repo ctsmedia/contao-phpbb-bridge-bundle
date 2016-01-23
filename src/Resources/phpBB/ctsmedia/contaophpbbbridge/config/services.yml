@@ -5,6 +5,7 @@ services:
     ctsmedia.contaophpbbbridge.connector:
         class: ctsmedia\contaophpbbbridge\contao\Connector
         arguments:
+            - '%contao.bridge_is_installed%'
             - '%contao.forum_pageId%'
             - '%contao.url%'
             - '@user'

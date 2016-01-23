@@ -22,6 +22,7 @@ use Contao\Input;
 use Contao\MemberModel;
 use Contao\System;
 use Doctrine\DBAL\Connection;
+use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -50,7 +51,13 @@ class Connector
     {
         $this->db = $db;
         $this->table_prefix = System::getContainer()->getParameter('phpbb_bridge.db.table_prefix');
-        $this->config = Yaml::parse(file_get_contents(__DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/config/contao.yml'));
+        $configFile = __DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/config/contao.yml';
+        if(is_file($configFile)){
+            $this->config = Yaml::parse(file_get_contents($configFile));
+        } else {
+            $this->config = Yaml::parse(file_get_contents($configFile.'.dist'));
+        }
+
     }
 
     /**
@@ -352,8 +359,15 @@ class Connector
         }
 
         if ($isChanged === true) {
-            file_put_contents(__DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/config/contao.yml',
-                Yaml::dump($currentConfig));
+            $configFile = __DIR__ . '/../Resources/phpBB/ctsmedia/contaophpbbbridge/config/contao.yml';
+            $result = file_put_contents($configFile, Yaml::dump($currentConfig));
+
+            if(!($result > 0)){
+                throw new IOException('Could not write bidge config file '.$configFile);
+            }
+
+            // We've to load the new / updated config now for future processing
+            $this->config = Yaml::parse(file_get_contents($configFile));
 
             if($clearPhpbbCache === true) {
                 $this->clearForumCache();

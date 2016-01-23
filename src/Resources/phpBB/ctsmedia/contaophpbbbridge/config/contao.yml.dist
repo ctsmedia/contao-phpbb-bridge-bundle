@@ -5,3 +5,4 @@ parameters:
     contao.url: ~
     contao.body_class: ~
     contao.load_dynamic_layout: ~
+    contao.bridge_is_installed: false

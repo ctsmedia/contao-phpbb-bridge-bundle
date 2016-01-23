@@ -31,6 +31,7 @@ require_once __DIR__ . "/../vendor/autoload.php";
  */
 class Connector
 {
+    protected $isBridgeInstalled;
     protected $forum_pageId;
     protected $contao_url;
 
@@ -40,13 +41,23 @@ class Connector
 
     protected $request;
 
-    public function __construct($forum_pageId, $contao_url, user $user, auth $auth, request $request)
+    public function __construct($isBridgeInstalled, $forum_pageId, $contao_url, user $user, auth $auth, request $request)
     {
+        $this->isBridgeInstalled = (bool) $isBridgeInstalled;
         $this->forum_pageId = $forum_pageId;
         $this->contao_url = $contao_url;
         $this->user = $user;
         $this->auth = $auth;
         $this->request = $request;
+    }
+
+    /**
+     * Checks if the bridge is mark as installed on phpbb side
+     *
+     * @return bool
+     */
+    public function isInstalled() {
+        return $this->isBridgeInstalled;
     }
 
     public function test() {
