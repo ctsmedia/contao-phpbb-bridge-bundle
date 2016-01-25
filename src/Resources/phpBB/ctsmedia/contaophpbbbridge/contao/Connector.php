@@ -78,7 +78,7 @@ class Connector
      * @param $password
      * @return bool true if the login was successful
      */
-    public function login($username, $password) {
+    public function login($username, $password, $autologin = false) {
 
         // The request comes from contao. Maybe from a hook like credentialCheck, importUser so we skip
         if($this->request->header('X-Requested-With') == 'ContaoPhpbbBridge'){
@@ -91,7 +91,7 @@ class Connector
         $formFields = array(
             'username' => $username,
             'password' => $password,
-            'autologin' => 0,
+            'autologin' => (bool)$autologin,
         );
 
         // Send request as form data
@@ -110,7 +110,7 @@ class Connector
                     $cookies = explode($delimiter, $response->getHeader('set-cookie', $delimiter));
 
                     foreach($cookies as $cookie) {
-                        header('Set-Cookie: '.$cookie);
+                        header('Set-Cookie: '.$cookie, false);
                     }
 
                     // The following won't work because the expire value is not an int and conversion something like
@@ -151,6 +151,16 @@ class Connector
         if($this->isJsonResponse($response)) {
             $jsonData = json_decode($response->getContent());
             if(isset($jsonData->logout_status)) {
+                // Set cookies from the contao response
+                if($response->getHeader('set-cookie')) {
+
+                    $delimiter = ' || ';
+                    $cookies = explode($delimiter, $response->getHeader('set-cookie', $delimiter));
+
+                    foreach($cookies as $cookie) {
+                        header('Set-Cookie: '.$cookie, false);
+                    }
+                }
                 return $jsonData->logout_status;
             }
         }
@@ -167,9 +177,15 @@ class Connector
         $headers = $this->initContaoRequestHeaders();
 
         $response = $browser->get($this->contao_url.'/phpbb_bridge/layout', $headers);
+
+//        dump("lodlay");
+//        dump($response);
+
         $sections = array();
         if($this->isJsonResponse($response)) {
             $sections = $jsonData = json_decode($response->getContent());
+
+        } else {
 
         }
         return $sections;

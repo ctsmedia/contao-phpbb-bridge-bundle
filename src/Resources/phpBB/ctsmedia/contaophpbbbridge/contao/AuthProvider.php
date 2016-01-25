@@ -56,7 +56,7 @@ class AuthProvider extends db
         // We only need to trigger contao login if the phpbb login was successful
         // @todo is it so? Maybe we should interpret the result, especially if it was false???
         if($result['status'] == LOGIN_SUCCESS){
-            $this->contaoConnector->login($username, $password);
+            $this->contaoConnector->login($username, $password, $this->request->is_set_post('autologin'));
         }
 
         return $result;

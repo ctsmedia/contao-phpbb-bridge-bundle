@@ -202,15 +202,14 @@ class Connector
      * @param $password string
      * @return bool
      */
-    public function login($username, $password, $forceToSend = false)
+    public function login($username, $password, $autologin = false, $forceToSend = false)
     {
-
         // @todo login againt bridge controller
         $loginUrl = Environment::get('url') . '/' . $this->getForumPath() . '/ucp.php?mode=login';
         $formFields = array(
             'username' => $username,
             'password' => $password,
-            'autologin' => 1,
+            'autologin' => (bool)$autologin,
             'viewonline' => 0,
             'login' => 'Login'
         );

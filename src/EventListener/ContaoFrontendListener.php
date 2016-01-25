@@ -51,7 +51,7 @@ class ContaoFrontendListener
     public function onImportUser($username, $password, $scope)
     {
         if ($scope == 'tl_member') {
-            $loginResult = System::getContainer()->get('phpbb_bridge.connector')->login($username, $password, true);
+            $loginResult = System::getContainer()->get('phpbb_bridge.connector')->login($username, $password, false, true);
             // Only import user if login to forum succeeded
             if ($loginResult === true) {
                 System::log("Importing User: ".$username, __METHOD__ ,TL_ACCESS);
@@ -76,7 +76,7 @@ class ContaoFrontendListener
     {
         // Only try to login if it's frontend user
         if ($user instanceof FrontendUser) {
-            $loginResult = System::getContainer()->get('phpbb_bridge.connector')->login($username, $password, true);
+            $loginResult = System::getContainer()->get('phpbb_bridge.connector')->login($username, $password, false,  true);
             // Login was successful on phpbb side. Maybe user changed his password. So do we for contao then
             if ($loginResult === true) {
                 $user->password = Encryption::hash($password);
@@ -102,7 +102,7 @@ class ContaoFrontendListener
             && System::getContainer()->get('request')->attributes->get('isInternalForumRequest', false) === false
         ) {
             $result = System::getContainer()->get('phpbb_bridge.connector')->login($user->username,
-                Input::postUnsafeRaw('password'));
+                Input::postUnsafeRaw('password'), (bool)Input::post('autologin'));
 
             if ($result === false) {
                 System::log('Could not login user to phpbb after successfull login to contao: ' . $user->username,
