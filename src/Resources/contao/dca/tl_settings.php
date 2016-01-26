@@ -19,6 +19,7 @@ class tl_settings_phpbbforum extends tl_settings {
 
         if($result > 0){
             Message::addInfo("Session Expire Timeout updated in Forum");
+            System::getContainer()->get('phpbb_bridge.connector')->clearForumCache();
         }
 
         return $varvalue;
