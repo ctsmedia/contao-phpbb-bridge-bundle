@@ -10,7 +10,7 @@
  */
 
 $GLOBALS['TL_DCA']['tl_settings']['fields']['sessionTimeout']['save_callback'][] = array('tl_settings_phpbbforum', 'updateSessionTimeoutConfig');
-//$GLOBALS['TL_DCA']['tl_settings']['fields']['sessionTimeout']['save_callback'][] = array('tl_settings_phpbbforum', 'updateAutologinConfig');
+$GLOBALS['TL_DCA']['tl_settings']['fields']['autologin']['save_callback'][] = array('tl_settings_phpbbforum', 'updateAutologinConfig');
 
 class tl_settings_phpbbforum extends tl_settings {
 
@@ -27,12 +27,23 @@ class tl_settings_phpbbforum extends tl_settings {
 
     /**
      *
-     * @todo Implement provider->autologin before saving here
+     * Sync the autologin expire value
+     * The value must be dividable by a day in seconds = 86400
+     *
+     * @throws Exception
      * @param $varvalue
      * @return mixed
      */
     public function updateAutologinConfig($varvalue){
-        //System::getContainer()->get('phpbb_bridge.connector')->updateDbConfig('max_autologin_time', $varvalue);
+        if($varvalue % 86400 != 0) {
+            throw new Exception('Value must be dividable by 86400 (seconds of day)');
+        } else {
+            $result = System::getContainer()->get('phpbb_bridge.connector')->updateDbConfig('max_autologin_time', $varvalue / 86400);
+            if($result > 0){
+                Message::addInfo("Autologin Expire Timeout updated in Forum to ".($varvalue / 86400)." days");
+                System::getContainer()->get('phpbb_bridge.connector')->clearForumCache();
+            }
+        }
 
         return $varvalue;
     }
