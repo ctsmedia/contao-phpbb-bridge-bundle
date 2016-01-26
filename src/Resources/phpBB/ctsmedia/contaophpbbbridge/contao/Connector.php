@@ -41,9 +41,15 @@ class Connector
 
     protected $request;
 
-    public function __construct($isBridgeInstalled, $forum_pageId, $contao_url, user $user, auth $auth, request $request)
-    {
-        $this->isBridgeInstalled = (bool) $isBridgeInstalled;
+    public function __construct(
+        $isBridgeInstalled,
+        $forum_pageId,
+        $contao_url,
+        user $user,
+        auth $auth,
+        request $request
+    ) {
+        $this->isBridgeInstalled = (bool)$isBridgeInstalled;
         $this->forum_pageId = $forum_pageId;
         $this->contao_url = $contao_url;
         $this->user = $user;
@@ -56,14 +62,16 @@ class Connector
      *
      * @return bool
      */
-    public function isInstalled() {
+    public function isInstalled()
+    {
         return $this->isBridgeInstalled;
     }
 
-    public function test() {
+    public function test()
+    {
         $browser = $this->initContaoRequest();
         $headers = $this->initContaoRequestHeaders();
-        $response = $browser->get($this->contao_url.'/phpbb_bridge/test', $headers);
+        $response = $browser->get($this->contao_url . '/phpbb_bridge/test', $headers);
 
         //dump($response->getContent());
         echo $response->getContent();
@@ -78,10 +86,11 @@ class Connector
      * @param $password
      * @return bool true if the login was successful
      */
-    public function login($username, $password, $autologin = false) {
+    public function login($username, $password, $autologin = false)
+    {
 
         // The request comes from contao. Maybe from a hook like credentialCheck, importUser so we skip
-        if($this->request->header('X-Requested-With') == 'ContaoPhpbbBridge'){
+        if ($this->request->header('X-Requested-With') == 'ContaoPhpbbBridge') {
             return false;
         };
 
@@ -96,21 +105,22 @@ class Connector
 
         // Send request as form data
         /* @var $response Response */
-        $response = $browser->submit($this->contao_url."/phpbb_bridge/login", $formFields, RequestInterface::METHOD_POST, $headers);
+        $response = $browser->submit($this->contao_url . "/phpbb_bridge/login", $formFields,
+            RequestInterface::METHOD_POST, $headers);
 
-        if($this->isJsonResponse($response)){
+        if ($this->isJsonResponse($response)) {
             $jsonData = json_decode($response->getContent());
 
-            if(isset($jsonData->login_status) && $jsonData->login_status == true  ) {
+            if (isset($jsonData->login_status) && $jsonData->login_status == true) {
 
                 // Set cookies from the contao response
-                if($response->getHeader('set-cookie')) {
+                if ($response->getHeader('set-cookie')) {
 
                     $delimiter = ' || ';
                     $cookies = explode($delimiter, $response->getHeader('set-cookie', $delimiter));
 
-                    foreach($cookies as $cookie) {
-                        header('Set-Cookie: '.$cookie, false);
+                    foreach ($cookies as $cookie) {
+                        header('Set-Cookie: ' . $cookie, false);
                     }
 
                     // The following won't work because the expire value is not an int and conversion something like
@@ -134,10 +144,11 @@ class Connector
      *
      * @return bool if the logout was successful
      */
-    public function logout(){
+    public function logout()
+    {
 
         // The request comes from contao. We can skip here
-        if($this->request->header('X-Requested-With') == 'ContaoPhpbbBridge'){
+        if ($this->request->header('X-Requested-With') == 'ContaoPhpbbBridge') {
             return false;
         };
 
@@ -146,19 +157,19 @@ class Connector
 
         // This is usually a fire and forget request
         // but on contao side we return a Json response for debugging purposes
-        $response = $browser->get($this->contao_url.'/phpbb_bridge/logout', $headers);
+        $response = $browser->get($this->contao_url . '/phpbb_bridge/logout', $headers);
 
-        if($this->isJsonResponse($response)) {
+        if ($this->isJsonResponse($response)) {
             $jsonData = json_decode($response->getContent());
-            if(isset($jsonData->logout_status)) {
+            if (isset($jsonData->logout_status)) {
                 // Set cookies from the contao response
-                if($response->getHeader('set-cookie')) {
+                if ($response->getHeader('set-cookie')) {
 
                     $delimiter = ' || ';
                     $cookies = explode($delimiter, $response->getHeader('set-cookie', $delimiter));
 
-                    foreach($cookies as $cookie) {
-                        header('Set-Cookie: '.$cookie, false);
+                    foreach ($cookies as $cookie) {
+                        header('Set-Cookie: ' . $cookie, false);
                     }
                 }
                 return $jsonData->logout_status;
@@ -172,22 +183,37 @@ class Connector
      *
      * @return array
      */
-    public function loadLayout(){
+    public function loadLayout()
+    {
         $browser = $this->initContaoRequest();
         $headers = $this->initContaoRequestHeaders();
 
-        $response = $browser->get($this->contao_url.'/phpbb_bridge/layout', $headers);
+        /* @var $response Response */
+        $response = $browser->get($this->contao_url . '/phpbb_bridge/layout', $headers);
 
-//        dump("lodlay");
-//        dump($response);
+        // Maybe we get asked to refresh the current site. This can happen if an session is expired and autologin is triggered
+        // Wo do this one time
+        // @see Contao/FrontendUser::authenticate() => Controller::reaload()
+        if ($response->getStatusCode() == 303
+            && $response->getHeader('Location') == $this->contao_url . '/phpbb_bridge/layout'
+            && $response->getHeader('set-cookie')
+        ) {
+            $delimiter = ' || ';
+            $cookies = explode($delimiter, $response->getHeader('set-cookie', $delimiter));
+            foreach ($cookies as $cookie) {
+                header('Set-Cookie: ' . $cookie, false); // First we put the cookies into the response to the client
+                // we expect a FE_AUTH cookie which will get set for new requests automatically via the cookie listener
+            }
+            $response = $browser->get($this->contao_url . '/phpbb_bridge/layout', $headers);
+        }
+
+
 
         $sections = array();
-        if($this->isJsonResponse($response)) {
+        if ($this->isJsonResponse($response)) {
             $sections = $jsonData = json_decode($response->getContent());
 
-        } else {
-
-        }
+        } 
         return $sections;
     }
 
@@ -246,7 +272,8 @@ class Connector
      * @param Response $response
      * @return bool
      */
-    protected function isJsonResponse(Response $response){
+    protected function isJsonResponse(Response $response)
+    {
         return $response->getStatusCode() == 200 && $response->getHeader('content-type') == 'application/json';
     }
 
