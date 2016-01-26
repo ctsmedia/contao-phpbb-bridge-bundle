@@ -209,10 +209,13 @@ class Connector
         $formFields = array(
             'username' => $username,
             'password' => $password,
-            'autologin' => (bool)$autologin,
             'viewonline' => 0,
             'login' => 'Login'
         );
+
+        // We've to set this only if we want to autologin. $formFields['autologin'] = false would still activate autologin
+        if($autologin === true) $formFields['autologin'] = "on";
+
         $headers = $this->initForumRequestHeaders();
         $browser = $this->initForumRequest($forceToSend);
 
