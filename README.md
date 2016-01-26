@@ -12,6 +12,9 @@ phpbb 3.1 Bridge for Contao 4
 ### *Q:* Layout is not generated in Forum area
 *A:* Make sure you've setup the phpbb site in contao correctly 
 and *that the path to the layout are writeable*, meanging the `phpbbroot/ext/ctsmedia/contaophpbbbridge/styles/all/template/event`
+
+### *Q:* Coming back after some time I'm logged in to the forum but not contao (or vice versa)
+*A:* Make sure the expire times for login and login are synced. See 4.1 of the installation dialog. Adjust Session Expire and Autologin Expire to ypur likings
  
 ### *Q:* Login is not working
 *A:* 
@@ -86,6 +89,8 @@ In release versions we will pre compile the dependencies for phpbb
     
 4. Login to the Contao Backend and create a Page of type 'PhpBB Forum Site' and configure it appropriate. You'll get some log messages of something fails / succeeds.
 Important is the alias and path to the forum. The Bridge module will create a symlink to it so you can access the forum right on. 
+
+    4.1 Go to the settings section and save once. The session expire and autologin time now get synced. You should get 2 confirmation messages. Always change those values from the contao side. 
 
 5. Once Contao has made the link to forum login to the admin panel of phpbb and activate the contao extension under `Customize -> Manage Extensions`
 If the module doesn't appear, purge the cache (`General -> Find 'Purge the cache' and click Run now`)
