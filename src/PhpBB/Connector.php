@@ -20,6 +20,7 @@ use Contao\Encryption;
 use Contao\Environment;
 use Contao\Input;
 use Contao\MemberModel;
+use Contao\Message;
 use Contao\System;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -442,6 +443,32 @@ class Connector
         // @todo load path from routing.yml?
         $path = '/contao_connect/purge_cache';
         $browser->get(Environment::get('url') . '/' . $this->getForumPath() . $path, $headers);
+    }
+
+    /**
+     * Compares the current host with phpbb cookie Domain
+     * @return bool
+     */
+    public function compareCookieDomains() {
+        $host = Environment::get('host');
+        $phpbbCookieDomain = $this->getDbConfig('cookie_domain');
+
+        return strcasecmp($host, $phpbbCookieDomain) == 0;
+
+    }
+
+    /**
+     * Compares the current host to the phpbb Cookie Domain
+     * and adds Warning Msg if they differ
+     */
+    public function testCookieDomain(){
+        $result = $this->compareCookieDomains();
+
+        if($result === false){
+            Message::addError('WARNING: The current Host ('.Environment::get('host').') differs from the cookie_domain configured in phpbb. Please make sure the used frontend domain is the same to: '.
+                System::getContainer()->get('phpbb_bridge.connector')->getDbConfig('cookie_domain')
+            );
+        }
     }
 
 

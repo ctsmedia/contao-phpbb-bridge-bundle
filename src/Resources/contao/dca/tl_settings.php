@@ -12,8 +12,25 @@
 $GLOBALS['TL_DCA']['tl_settings']['fields']['sessionTimeout']['save_callback'][] = array('tl_settings_phpbbforum', 'updateSessionTimeoutConfig');
 $GLOBALS['TL_DCA']['tl_settings']['fields']['autologin']['save_callback'][] = array('tl_settings_phpbbforum', 'updateAutologinConfig');
 $GLOBALS['TL_DCA']['tl_settings']['fields']['lockPeriod']['save_callback'][] = array('tl_settings_phpbbforum', 'updateLoginLock');
+$GLOBALS['TL_DCA']['tl_settings']['config']['onsubmit_callback'][] = array('tl_settings_phpbbforum', 'onSubmitCallback');
+
 
 class tl_settings_phpbbforum extends tl_settings {
+
+    protected $clearPhpbbCache = false;
+
+    /**
+     * Clears the phpbb cache if relevant config values of tl_settings have changed
+     *
+     * @param DC_File $tl_settings
+     */
+    public function onSubmitCallback(DC_File $tl_settings){
+        if($this->clearPhpbbCache === true){
+            Message::addInfo("phpBB Bridge: Config Values have been changed. Clearing Forum Cache");
+            System::getContainer()->get('phpbb_bridge.connector')->clearForumCache();
+        }
+        System::getContainer()->get('phpbb_bridge.connector')->testCookieDomain();
+    }
 
     /**
      * Syncs Login Lock settings
@@ -26,14 +43,14 @@ class tl_settings_phpbbforum extends tl_settings {
         $result[] = System::getContainer()->get('phpbb_bridge.connector')->updateDbConfig('max_login_attempts', 3);
 
         if($result[0] > 0){
-            Message::addInfo("IP Login Lock Time has been updated to ".$varvalue);
+            Message::addInfo("phpBB Bridge: IP Login Lock Time has been updated to ".$varvalue);
         }
         if($result[1] > 0){
-            Message::addInfo("Max Login attempts have been set to 3");
+            Message::addInfo("phpBB Bridge: Max Login attempts have been set to 3");
         }
 
         if($result[1] > 0 || $result[0] > 0){
-            System::getContainer()->get('phpbb_bridge.connector')->clearForumCache();
+            $this->clearPhpbbCache = true;
         }
 
         return $varvalue;
@@ -54,8 +71,8 @@ class tl_settings_phpbbforum extends tl_settings {
         $result = System::getContainer()->get('phpbb_bridge.connector')->updateDbConfig('session_length', ($varvalue - 60));
 
         if($result > 0){
-            Message::addInfo("Session Expire Timeout updated in Forum");
-            System::getContainer()->get('phpbb_bridge.connector')->clearForumCache();
+            Message::addInfo("phpBB Bridge: Session Expire Timeout updated in Forum");
+            $this->clearPhpbbCache = true;
         }
 
         return $varvalue;
@@ -76,12 +93,14 @@ class tl_settings_phpbbforum extends tl_settings {
         } else {
             $result = System::getContainer()->get('phpbb_bridge.connector')->updateDbConfig('max_autologin_time', $varvalue / 86400);
             if($result > 0){
-                Message::addInfo("Autologin Expire Timeout updated in Forum to ".($varvalue / 86400)." days");
-                System::getContainer()->get('phpbb_bridge.connector')->clearForumCache();
+                Message::addInfo("phpBB Bridge: Autologin Expire Timeout updated in Forum to ".($varvalue / 86400)." days");
+                $this->clearPhpbbCache = true;
             }
         }
 
         return $varvalue;
     }
+
+
 
 }
