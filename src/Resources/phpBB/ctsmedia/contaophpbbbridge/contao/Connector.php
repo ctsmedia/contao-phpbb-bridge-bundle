@@ -67,6 +67,15 @@ class Connector
         return $this->isBridgeInstalled;
     }
 
+    /**
+     * Tests if the session user is logged in
+     *
+     * @return bool
+     */
+    public function isLoggedIn(){
+        return ($this->user->data['user_id'] != ANONYMOUS) ? true : false;
+    }
+
     public function test()
     {
         $browser = $this->initContaoRequest();
@@ -198,13 +207,16 @@ class Connector
             && $response->getHeader('Location') == $this->contao_url . '/phpbb_bridge/layout'
             && $response->getHeader('set-cookie')
         ) {
-            $delimiter = ' || ';
-            $cookies = explode($delimiter, $response->getHeader('set-cookie', $delimiter));
-            foreach ($cookies as $cookie) {
-                header('Set-Cookie: ' . $cookie, false); // First we put the cookies into the response to the client
-                // we expect a FE_AUTH cookie which will get set for new requests automatically via the cookie listener
-            }
+
+            $this->passCookiesThrough($response); // First we put the cookies into the response to the client
+
+            // we expect a FE_AUTH cookie which will get set for new requests automatically via the cookie listener
             $response = $browser->get($this->contao_url . '/phpbb_bridge/layout', $headers);
+        } else {
+            // refresh cookies to keep contao session alive
+            if($response->getHeader('set-cookie')) {
+                $this->passCookiesThrough($response);
+            }
         }
 
 
@@ -215,6 +227,46 @@ class Connector
 
         } 
         return $sections;
+    }
+
+    /**
+     * Sends a ping to contao to keep the session alive
+     * Expects a Json Response and the updated cookies within
+     *
+     * @return bool
+     */
+    public function syncContaoSession() {
+
+        // The request comes from contao. We can skip here
+        if ($this->request->header('X-Requested-With') == 'ContaoPhpbbBridge') {
+            return false;
+        };
+
+        $browser = $this->initContaoRequest();
+        $headers = $this->initContaoRequestHeaders();
+
+        /* @var $response Response */
+        $response = $browser->get($this->contao_url . '/phpbb_bridge/ping', $headers);
+
+        if ($this->isJsonResponse($response) && $response->getHeader('set-cookie')) {
+            $this->passCookiesThrough($response);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Passes the cookies from a contao response to the client
+     *
+     * @param Response $response
+     */
+    protected function passCookiesThrough(Response $response) {
+        $delimiter = ' || ';
+        $cookies = explode($delimiter, $response->getHeader('set-cookie', $delimiter));
+        foreach ($cookies as $cookie) {
+            header('Set-Cookie: ' . $cookie, false);
+        }
     }
 
     /**

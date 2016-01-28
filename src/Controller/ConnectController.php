@@ -77,6 +77,22 @@ class ConnectController extends Controller
 
     }
 
+
+    /**
+     * @Route("/ping")
+     * @return Response
+     */
+    public function pingAction(){
+        $this->validateRequest();
+
+        $response = new JsonResponse();
+        $response->setData(array(
+            'message' => "pong"
+        ));
+
+        return $response;
+    }
+
     /**
      *
      * @Route("/test")
