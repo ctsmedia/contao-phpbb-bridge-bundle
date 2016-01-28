@@ -27,6 +27,7 @@ class tl_settings_phpbbforum extends tl_settings {
     public function onSubmitCallback(DC_File $tl_settings){
         if($this->clearPhpbbCache === true){
             Message::addInfo("phpBB Bridge: Config Values have been changed. Clearing Forum Cache");
+            System::getContainer()->get('phpbb_bridge.connector')->setMandatoryDbConfigValues();
             System::getContainer()->get('phpbb_bridge.connector')->clearForumCache();
         }
         System::getContainer()->get('phpbb_bridge.connector')->testCookieDomain();

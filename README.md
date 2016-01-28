@@ -106,7 +106,6 @@ If this entry doesn't appear yet, purge the cache (`General -> Find 'Purge the c
 ### Optimization
 The bridge is doing some internal http requests at some points. To increase performance you may want to add a local dns entry 
 for your domain on your server. So the requests never leave the server.
-Especially if you use dynamic layout rendering
 
 ### Configuration
 
@@ -124,13 +123,12 @@ Especially if you use dynamic layout rendering
 
 See step 5 and 6 of installation process
 
- * Cookie Settings -> **Make sure the cookie domain is matching the contao website domain** Otherwise login sync will not work 
- * Security Settings -> **Maximum number of login attempts per IP address:** set to 0 (could possibly lockout the bridge logins)
- * Security Settings -> **Validate X_FORWARDED_FOR header:** set to NO (could possibly lockout the bridge)
+ * Cookie Settings -> **Make sure the cookie domain is matching the contao website domain** Otherwise login sync will not work. 
+ * Security Settings -> **Validate X_FORWARDED_FOR header:** set to NO. This is enforced by the bridge on every config change. So don't change that config value
  * *During Development:* Load Settings -> **Recompile stale style components:** to YES
  
 
-#### Files
+#### Config Files
 
 ##### phpBB DB
 If phpBB is installed in it's own DB the bridge needs to know this.

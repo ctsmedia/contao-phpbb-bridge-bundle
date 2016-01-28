@@ -105,6 +105,7 @@ class tl_page_phpbbforum extends tl_page {
             'contao.forum_pageAlias' => $dc->activeRecord->phpbb_alias,
             'contao.bridge_is_installed' => true,
         ));
+        System::getContainer()->get('phpbb_bridge.connector')->setMandatoryDbConfigValues();
         System::getContainer()->get('phpbb_bridge.connector')->testCookieDomain();
     }
 

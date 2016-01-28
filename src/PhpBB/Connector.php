@@ -355,6 +355,15 @@ class Connector
     }
 
     /**
+     * Enforce those settings to make the bridge runnable
+     */
+    public function setMandatoryDbConfigValues(){
+        // Enforce the forwared_for_check to 0, because we switching from live accessing the forum (no proxy)
+        // to internal requests via contao all the time
+        $this->updateConfig('forwarded_for_check', 0);
+    }
+
+    /**
      * Alias method to the forum path easily
      */
     public function getForumPath()
