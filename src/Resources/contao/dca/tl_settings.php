@@ -11,9 +11,41 @@
 
 $GLOBALS['TL_DCA']['tl_settings']['fields']['sessionTimeout']['save_callback'][] = array('tl_settings_phpbbforum', 'updateSessionTimeoutConfig');
 $GLOBALS['TL_DCA']['tl_settings']['fields']['autologin']['save_callback'][] = array('tl_settings_phpbbforum', 'updateAutologinConfig');
+$GLOBALS['TL_DCA']['tl_settings']['fields']['lockPeriod']['save_callback'][] = array('tl_settings_phpbbforum', 'updateLoginLock');
 
 class tl_settings_phpbbforum extends tl_settings {
 
+    /**
+     * Syncs Login Lock settings
+     *
+     * @param $varvalue
+     * @return mixed
+     */
+    public function updateLoginLock($varvalue){
+        $result[] = System::getContainer()->get('phpbb_bridge.connector')->updateDbConfig('ip_login_limit_time', $varvalue);
+        $result[] = System::getContainer()->get('phpbb_bridge.connector')->updateDbConfig('max_login_attempts', 3);
+
+        if($result[0] > 0){
+            Message::addInfo("IP Login Lock Time has been updated to ".$varvalue);
+        }
+        if($result[1] > 0){
+            Message::addInfo("Max Login attempts have been set to 3");
+        }
+
+        if($result[1] > 0 || $result[0] > 0){
+            System::getContainer()->get('phpbb_bridge.connector')->clearForumCache();
+        }
+
+        return $varvalue;
+    }
+
+    /**
+     * Syncs session expiration
+     *
+     * @param $varvalue
+     * @return mixed
+     * @throws Exception
+     */
     public function updateSessionTimeoutConfig($varvalue){
         // phpbb always add 60sec to the configured value. To stay in sync the min. allowed value has to be 60
         if($varvalue < 60) {
