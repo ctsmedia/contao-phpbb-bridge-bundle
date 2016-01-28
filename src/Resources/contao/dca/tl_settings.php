@@ -15,7 +15,11 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['autologin']['save_callback'][] = ar
 class tl_settings_phpbbforum extends tl_settings {
 
     public function updateSessionTimeoutConfig($varvalue){
-        $result = System::getContainer()->get('phpbb_bridge.connector')->updateDbConfig('session_length', $varvalue);
+        // phpbb always add 60sec to the configured value. To stay in sync the min. allowed value has to be 60
+        if($varvalue < 60) {
+            throw new Exception('Value must be higher than 60');
+        }
+        $result = System::getContainer()->get('phpbb_bridge.connector')->updateDbConfig('session_length', ($varvalue - 60));
 
         if($result > 0){
             Message::addInfo("Session Expire Timeout updated in Forum");

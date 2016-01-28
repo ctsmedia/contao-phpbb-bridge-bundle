@@ -1,6 +1,6 @@
 ctsmedia_contaophpbbbridge_controller_is_logged_in:
-    path: /contao_connect/is_logged_in
-    defaults: { _controller: ctsmedia.contaophpbbbridge.controller:isLoggedIn }
+    path: /contao_connect/is_logged_in/{refreshSession}
+    defaults: { _controller: ctsmedia.contaophpbbbridge.controller:isLoggedIn, refreshSession: false }
 ctsmedia_contaophpbbbridge_controller_purge_cache:
         path: /contao_connect/purge_cache
         defaults: { _controller: ctsmedia.contaophpbbbridge.controller:purgeCache }

@@ -56,14 +56,21 @@ class Connect
      * Tests if the current user is logged in
      * @return Response
      */
-    public function isLoggedIn(){
+    public function isLoggedIn($refreshSession){
 
         $response = new JsonResponse();
+        $loggedInStatus = ($this->user->data['user_id'] != ANONYMOUS) ? true : false;
 
         $response->setData(array(
-            'logged_in' => (($this->user->data['user_id'] != ANONYMOUS) ? true : false),
+            'logged_in' => $loggedInStatus,
             'data' => $this->user->data
         ));
+
+        if($refreshSession != false && $loggedInStatus === true){
+            $session_data = array('session_time' => time());
+            $this->user->update_session($session_data, $this->user->session_id);
+        }
+
 
         return $response;
     }

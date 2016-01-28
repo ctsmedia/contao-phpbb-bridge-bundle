@@ -172,6 +172,40 @@ class Connector
     }
 
     /**
+     * Forces the forum to refresh user session to stay in (expire sync) with contao
+     * Is called via kernel.response event and should only be called once per Master (Frontend) request
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function syncForumSession(){
+        $browser = $this->initForumRequest();
+        $headers = $this->initForumRequestHeaders();
+
+        // @todo load path from routing.yml
+        $path = '/contao_connect/is_logged_in/refreshSession';
+        $jsonResponse = $browser->get(Environment::get('url') . '/' . $this->getForumPath() . $path, $headers);
+
+        if ($jsonResponse->getHeader('content-type') == 'application/json') {
+            $result = json_decode($jsonResponse->getContent());
+
+            // Parse cookies
+            $cookie_prefix = $this->getDbConfig('cookie_name');
+            $loginCookies = array();
+            foreach ($browser->getListener()->getCookies() as $cookie) {
+                /* @var $cookie Cookie */
+
+                // Stream cookies through to the client
+                System::setCookie($cookie->getName(), $cookie->getValue(), (int)$cookie->getAttribute('expires'),
+                    $cookie->getAttribute('path'), $cookie->getAttribute('domain'));
+            }
+            return (boolean)$result->logged_in;
+        }
+
+        return false;
+    }
+
+    /**
      * Logout from phpbb
      */
     public function logout()
@@ -409,6 +443,8 @@ class Connector
         $path = '/contao_connect/purge_cache';
         $browser->get(Environment::get('url') . '/' . $this->getForumPath() . $path, $headers);
     }
+
+
 
     /**
      * @return Browser
