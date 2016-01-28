@@ -21,6 +21,7 @@ use Contao\Environment;
 use Contao\Input;
 use Contao\MemberModel;
 use Contao\Message;
+use Contao\PageModel;
 use Contao\System;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -298,6 +299,7 @@ class Connector
     public function importUser($username, $password)
     {
 
+        // Find User in forum
         $user = $this->getUser($username);
 
         if ($user) {
@@ -312,6 +314,13 @@ class Connector
             $contaoUser->password = Encryption::hash($password);
             $contaoUser->login = 1;
             $contaoUser->tstamp = $contaoUser->dateAdded = time();
+
+            $objPage = PageModel::findOneByType('phpbb_forum');
+            if($objPage->phpbb_default_groups){
+                $contaoUser->groups = $objPage->phpbb_default_groups;
+            }
+
+            // @todo add try catch, make it more safe, logout phpbb user on fail?
             $contaoUser->save();
             System::log('User imported: ' . $username, __METHOD__, TL_ACCESS);
             return true;
@@ -360,7 +369,7 @@ class Connector
     public function setMandatoryDbConfigValues(){
         // Enforce the forwared_for_check to 0, because we switching from live accessing the forum (no proxy)
         // to internal requests via contao all the time
-        $this->updateConfig('forwarded_for_check', 0);
+        $this->updateDbConfig('forwarded_for_check', 0);
     }
 
     /**

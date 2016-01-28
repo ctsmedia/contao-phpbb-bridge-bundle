@@ -9,7 +9,7 @@
  * 
  */
 
-$GLOBALS['TL_DCA']['tl_page']['palettes']['phpbb_forum'] = '{title_legend},title,type;{phpbb_legend},phpbb_alias,phpbb_path;{layout_legend:hide},includeLayout;cssClass,phpbb_dynamic_layout;{tabnav_legend:hide},tabindex,accesskey;{publish_legend},published';
+$GLOBALS['TL_DCA']['tl_page']['palettes']['phpbb_forum'] = '{title_legend},title,type;{phpbb_legend},phpbb_alias,phpbb_path,phpbb_default_groups;{layout_legend:hide},includeLayout;cssClass,phpbb_dynamic_layout;{tabnav_legend:hide},tabindex,accesskey;{publish_legend},published';
 
 $GLOBALS['TL_DCA']['tl_page']['config']['onsubmit_callback'][] = array('tl_page_phpbbforum', 'updateConfig');
 $GLOBALS['TL_DCA']['tl_page']['config']['onsubmit_callback'][] = array('tl_page_phpbbforum', 'generateForumLayout');
@@ -46,6 +46,18 @@ $GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_dynamic_layout'] = array
     'inputType'               => 'checkbox',
     'eval'                    => array('tl_class'=>'w50 m12'),
     'sql'                     => "char(1) NOT NULL default ''"
+);
+
+$GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_default_groups'] = array
+(
+    'label'                   => &$GLOBALS['TL_LANG']['tl_member']['groups'],
+    'exclude'                 => true,
+    'filter'                  => true,
+    'inputType'               => 'checkboxWizard',
+    'foreignKey'              => 'tl_member_group.name',
+    'eval'                    => array('multiple'=>true, 'feEditable'=>true, 'feGroup'=>'login'),
+    'sql'                     => "blob NULL",
+    'relation'                => array('type'=>'belongsToMany', 'load'=>'lazy')
 );
 
 class tl_page_phpbbforum extends tl_page {
