@@ -57,6 +57,18 @@ class AuthProvider extends db
         // @todo is it so? Maybe we should interpret the result, especially if it was false???
         if($result['status'] == LOGIN_SUCCESS){
             $this->contaoConnector->login($username, $password, $this->request->is_set_post('autologin'));
+
+            // if autologin is set to true, we need to set all other sessions of the user to autologin = false
+            // because contao only allows one autologin session per user
+            if($this->request->is_set_post('autologin') && isset($result['user_row']['user_id']) && $result['user_row']['user_id'] > ANONYMOUS){
+                // Update current user session to be not autologin sessions (new one is not created yet)
+                $sql = 'UPDATE ' . SESSIONS_TABLE . ' SET session_autologin = 0 WHERE session_user_id = '."'". $this->db->sql_escape($result['user_row']['user_id']) . "'";
+                $this->db->sql_query($sql);
+                // Remove existing autologin keys
+                $sql = 'DELETE FROM ' . SESSIONS_KEYS_TABLE . '  WHERE user_id = '."'". $this->db->sql_escape($result['user_row']['user_id']) . "'";
+                $this->db->sql_query($sql);
+            }
+
         }
 
         return $result;

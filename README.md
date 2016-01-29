@@ -6,6 +6,10 @@ phpbb 3.1 Bridge for Contao 4
 ## Known Issues \ Limitations
 
 1. The bridge is not compatible to the contao dev mode (only in the forum area)
+2. phpbb does allow for multiple autologin sessions. For example you can use autologin on your work and home pc.
+Contao does _not_. Contao will always only used the last autologin session. Others are dropped (not really, there can only one be created)
+The behavior on contao side is fixed implemented in the core and not changeable as of 4.1. So the bridge adapts the contao behavior and will drop all
+autologin sessions other than the current one. 
 
 ## FAQs - Problem solving
 
