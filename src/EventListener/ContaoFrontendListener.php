@@ -128,4 +128,55 @@ class ContaoFrontendListener
     }
 
 
+    public function onReplaceInsertTags($tag) {
+        $elements = explode('::', $tag);
+
+        $value = false;
+        $phpbbCon = System::getContainer()->get('phpbb_bridge.connector');
+        $phpbbUrl = $phpbbCon->getBridgeConfig('url').'/'.$phpbbCon->getForumPath().'/';
+
+        // Non parameter tags
+        if($elements[0] == 'phpbb_bridge' ){
+
+            switch($elements[1]) {
+                case 'page_profile':
+                    $phpbbUserId = $phpbbCon->getCurrentUser() !== null ? $phpbbCon->getCurrentUser()->user_id : 1;
+                    $value = $phpbbUrl . 'memberlist.php?mode=viewprofile&u='.$phpbbUserId;
+                    break;
+                case 'page_login':
+                    $value = $phpbbUrl .  'ucp.php?mode=login';
+                    break;
+                case 'page_logout':
+                    $phpbbSid = $phpbbCon->getCurrentUser() !== null ? $phpbbCon->getCurrentUser()->session_id : '';
+                    $value = $phpbbUrl . 'ucp.php?mode=logout&sid='.$phpbbSid;
+                    break;
+                case 'page_resetpassword':
+                    $value = $phpbbUrl .'ucp.php?mode=sendpassword';
+                    break;
+                case 'page_ucp':
+                    $value = $phpbbUrl .'ucp.php';
+                    break;
+            }
+        }
+
+        // dynamic parameter tags
+        if(strpos($elements[0], 'phpbb_bridge_') !== false ){
+            switch($elements[0]){
+                case 'phpbb_bridge_user_profile':
+                    $user_id = $elements[1];
+                    // if we got a username, try to find the appropriate user id
+                    if(!is_numeric($user_id)){
+                        $user = $phpbbCon->getUser($user_id);
+                        if($user_id !== null) {
+                            $user_id = $user->user_id;
+                        }
+                    }
+                    $value = $phpbbUrl . 'memberlist.php?mode=viewprofile&u='.((int)$user_id);
+            }
+        }
+
+        return $value;
+    }
+
+
 }

@@ -20,6 +20,7 @@ $GLOBALS['TL_HOOKS']['importUser'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\E
 $GLOBALS['TL_HOOKS']['postLogout'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoFrontendListener', 'onLogout');
 $GLOBALS['TL_HOOKS']['postLogin'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoFrontendListener', 'onLogin');
 $GLOBALS['TL_HOOKS']['checkCredentials'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoFrontendListener', 'onCheckCredentials');
+$GLOBALS['TL_HOOKS']['replaceInsertTags'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoFrontendListener', 'onReplaceInsertTags');
 
 
 /**

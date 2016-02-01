@@ -79,8 +79,10 @@ class Connector
      */
     public function getCurrentUser()
     {
-        // Checks session if user data is alreay initialized or tries to check status (which then set user data to session)
-        if (System::getContainer()->get('session')->get('phpbb_user') || $this->isLoggedIn()) {
+        // Checks session if user data is already initialized (and not anonym user) or tries to check status (which then set user data to session)
+        if ( (System::getContainer()->get('session')->get('phpbb_user') && System::getContainer()->get('session')->get('phpbb_user')->user_id != 1)
+            || $this->isLoggedIn())
+        {
             return System::getContainer()->get('session')->get('phpbb_user');
         }
         return null;
