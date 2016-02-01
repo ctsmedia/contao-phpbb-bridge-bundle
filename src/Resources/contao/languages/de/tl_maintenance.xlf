@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<xliff version="1.1">
+  <file datatype="php" original="src/Resources/contao/languages/en/tl_maintenance.php" source-language="en" target-language="de">
+    <body>
+      <trans-unit id="tl_maintenance_jobs.phpbb_forum.0">
+        <source>Purge the forum cache</source>
+        <target>Forum Cache leeren</target>
+      </trans-unit>
+      <trans-unit id="tl_maintenance_jobs.phpbb_forum.1">
+        <source>Purges the forum cache and regenerates the contao layout files for it</source>
+        <target>Leert den phpBB Cache und erstellt die Contao Layout Files neu.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

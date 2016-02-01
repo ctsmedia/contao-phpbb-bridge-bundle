@@ -463,6 +463,18 @@ class Connector
         $browser->get(Environment::get('url') . '/' . $this->getForumPath() . $path, $headers);
     }
 
+
+    /**
+     * Regenerates the Forum Layout
+     */
+    public function generateForumLayoutFiles(){
+        $url = $this->getBridgeConfig('forum_pageUrl');
+        if($url !== null) {
+            $frontendRequest = new \Contao\Request();
+            $frontendRequest->send($url);
+        }
+    }
+
     /**
      * Compares the current host with phpbb cookie Domain
      * @return bool
