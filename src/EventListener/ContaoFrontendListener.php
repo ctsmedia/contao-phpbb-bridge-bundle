@@ -156,6 +156,9 @@ class ContaoFrontendListener
                 case 'page_ucp':
                     $value = $phpbbUrl .'ucp.php';
                     break;
+                case 'page_register':
+                    $value = $phpbbUrl .'ucp.php?mode=register';
+                    break;
             }
         }
 
