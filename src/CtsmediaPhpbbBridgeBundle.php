@@ -16,7 +16,8 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 /**
  * Defines the Bridge Bundle to combine Contao with phpBB
  *
- * @package Ctsmedia\Phpbb\Bridge
+ * @namespace Ctsmedia\Phpbb\BridgeBundle
+ * @package ctsmedia/contao-phpbb-bridge-bundle
  * @author Daniel Schwiperich <d.schwiperich@cts-media.eu>
  */
 class CtsmediaPhpbbBridgeBundle extends Bundle
