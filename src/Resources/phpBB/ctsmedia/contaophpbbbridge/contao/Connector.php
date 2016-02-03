@@ -298,6 +298,26 @@ class Connector
     }
 
     /**
+     * Contao DB Connection
+     *
+     * @return null|mysql
+     */
+    public function getContaoDbConnection(){
+        if($this->contaoDb === null) {
+            $this->contaoDb = new mysql();
+            $this->contaoDb->sql_connect(
+                $this->contaoDbConfig['host'],
+                $this->contaoDbConfig['user'],
+                $this->contaoDbConfig['password'],
+                $this->contaoDbConfig['dbname'],
+                $this->contaoDbConfig['port']
+            );
+        }
+
+        return $this->contaoDb;
+    }
+
+    /**
      * Passes the cookies from a contao response to the client
      *
      * @param Response $response
@@ -368,26 +388,6 @@ class Connector
     protected function isJsonResponse(Response $response)
     {
         return $response->getStatusCode() == 200 && $response->getHeader('content-type') == 'application/json';
-    }
-
-    /**
-     * Contao DB Connection
-     *
-     * @return null|mysql
-     */
-    protected function getContaoDbConnection(){
-        if($this->contaoDb === null) {
-            $this->contaoDb = new mysql();
-            $this->contaoDb->sql_connect(
-                $this->contaoDbConfig['host'],
-                $this->contaoDbConfig['user'],
-                $this->contaoDbConfig['password'],
-                $this->contaoDbConfig['dbname'],
-                $this->contaoDbConfig['port']
-            );
-        }
-
-        return $this->contaoDb;
     }
 
 }
