@@ -8,6 +8,7 @@ services:
             - '%contao.bridge_is_installed%'
             - '%contao.forum_pageId%'
             - '%contao.url%'
+            - '%contao.db%'
             - '@user'
             - '@auth'
             - '@request'

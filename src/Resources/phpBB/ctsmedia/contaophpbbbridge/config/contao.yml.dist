@@ -6,3 +6,12 @@ parameters:
     contao.body_class: ~
     contao.load_dynamic_layout: ~
     contao.bridge_is_installed: false
+    contao.db:
+        driver:   pdo_mysql
+        host:     ~
+        port:     ~
+        user:     ~
+        password: ~
+        dbname:   ~
+        charset:  UTF8
+

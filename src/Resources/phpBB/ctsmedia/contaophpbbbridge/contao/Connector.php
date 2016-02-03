@@ -19,6 +19,7 @@ use Buzz\Message\Response;
 use Buzz\Util\Cookie;
 use Buzz\Util\CookieJar;
 use phpbb\auth\auth;
+use phpbb\db\driver\mysql;
 use phpbb\request\request;
 use phpbb\user;
 
@@ -34,6 +35,8 @@ class Connector
     protected $isBridgeInstalled;
     protected $forum_pageId;
     protected $contao_url;
+    protected $contaoDb;
+    protected $contaoDbConfig;
 
     protected $user;
 
@@ -45,6 +48,7 @@ class Connector
         $isBridgeInstalled,
         $forum_pageId,
         $contao_url,
+        $contaoDbConfig,
         user $user,
         auth $auth,
         request $request
@@ -55,6 +59,9 @@ class Connector
         $this->user = $user;
         $this->auth = $auth;
         $this->request = $request;
+
+        $this->contaoDbConfig = $contaoDbConfig;
+        $this->contaoDb = null;
     }
 
     /**
@@ -256,6 +263,40 @@ class Connector
         return false;
     }
 
+
+    /**
+     * Returns a Contao User by username
+     *
+     * [
+     *  id
+     *  firstname
+     *  lastname
+     *  dateOfBirth
+     *  email
+     *  groups
+     *  login
+     *  username
+     *  autologin
+     *  ...
+     * ]
+     *
+     * @param $username string
+     * @return array|null
+     */
+    public function getContaoUser($username) {
+        $row = null;
+
+        if($this->getContaoDbConnection()) {
+            $sql = 'SELECT * FROM tl_member WHERE username = '.
+                $this->getContaoDbConnection()->_sql_validate_value($username).
+                ' LIMIT 1';
+            $result = $this->getContaoDbConnection()->sql_query($sql);
+            $row = $this->getContaoDbConnection()->sql_fetchrow($result);
+        }
+
+        return $row;
+    }
+
     /**
      * Passes the cookies from a contao response to the client
      *
@@ -327,6 +368,26 @@ class Connector
     protected function isJsonResponse(Response $response)
     {
         return $response->getStatusCode() == 200 && $response->getHeader('content-type') == 'application/json';
+    }
+
+    /**
+     * Contao DB Connection
+     *
+     * @return null|mysql
+     */
+    protected function getContaoDbConnection(){
+        if($this->contaoDb === null) {
+            $this->contaoDb = new mysql();
+            $this->contaoDb->sql_connect(
+                $this->contaoDbConfig['host'],
+                $this->contaoDbConfig['user'],
+                $this->contaoDbConfig['password'],
+                $this->contaoDbConfig['dbname'],
+                $this->contaoDbConfig['port']
+            );
+        }
+
+        return $this->contaoDb;
     }
 
 }

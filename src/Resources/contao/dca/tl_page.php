@@ -109,6 +109,15 @@ class tl_page_phpbbforum extends tl_page {
         $row = $dc->activeRecord->row();
         $row['skipInternalHook'] = true;
         $url = Controller::generateFrontendUrl($row);
+
+        $db = [
+            'host' => System::getContainer()->getParameter('database_host'),
+            'port' => System::getContainer()->getParameter('database_port'),
+            'user' => System::getContainer()->getParameter('database_user'),
+            'password' => System::getContainer()->getParameter('database_password'),
+            'dbname' => System::getContainer()->getParameter('database_name'),
+        ];
+
         System::getContainer()->get('phpbb_bridge.connector')->updateConfig(array(
             'contao.forum_pageId' => $dc->activeRecord->id,
             'contao.forum_pageUrl' => Environment::get('url').'/'.$url,
@@ -116,6 +125,7 @@ class tl_page_phpbbforum extends tl_page {
             'contao.load_dynamic_layout' => $dc->activeRecord->phpbb_dynamic_layout,
             'contao.forum_pageAlias' => $dc->activeRecord->phpbb_alias,
             'contao.bridge_is_installed' => true,
+            'contao.db' => $db
         ));
         System::getContainer()->get('phpbb_bridge.connector')->setMandatoryDbConfigValues();
         System::getContainer()->get('phpbb_bridge.connector')->testCookieDomain();
