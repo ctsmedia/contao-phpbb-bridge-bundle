@@ -28,7 +28,7 @@ $GLOBALS['TL_HOOKS']['replaceInsertTags'][] = array('\\Ctsmedia\\Phpbb\\BridgeBu
  */
 
 // Short notation (if forum is already installed otherwise long notation (always working))
-if(\Contao\System::getContainer()->get('phpbb_bridge.connector')->getForumPath()) {
+if(\Contao\System::getContainer()->has('phpbb_bridge.connector') && \Contao\System::getContainer()->get('phpbb_bridge.connector')->getForumPath()) {
     $affected =  ['web/'.\Contao\System::getContainer()->get('phpbb_bridge.connector')->getForumPath().'/ext/ctsmedia/contaophpbbbridge/styles/all/template/event'];
 } else {
     $affected = ['/vendor/ctsmedia/contao-phpbb-bridge-bundle/src/Resources/phpBB/ctsmedia/contaophpbbbridge/styles/all/template/event'];
