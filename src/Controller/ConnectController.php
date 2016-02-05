@@ -49,7 +49,7 @@ class ConnectController extends Controller
     {
         // Initialize Contao
         $this->container->get('contao.framework')->initialize(); // we need to do this for autoloading contao classes
-        $req = $this->container->get('request');
+        $req = $this->container->get('request_stack')->getCurrentRequest();
         /* @var $req Request */
 
         // Only requests from the bridge itself are allowed. Check if the specific header is set

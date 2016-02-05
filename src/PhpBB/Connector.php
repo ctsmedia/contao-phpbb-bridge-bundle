@@ -153,7 +153,15 @@ class Connector
      */
     public function isLoggedIn()
     {
-        $browser = $this->initForumRequest();
+        // Avoid multiple calls per request
+        if(
+            System::getContainer()->get('request_stack')->getCurrentRequest()->attributes->get('phpbb_loggedin_call_count', 0) > 0
+            && System::getContainer()->get('session')->get('phpbb_user', null) !== null
+        ) {
+            return System::getContainer()->get('session')->get('phpbb_user', null)->user_id != 1 ? true : false;
+        }
+
+        $browser = $this->initForumRequest(true);
         $headers = $this->initForumRequestHeaders();
 
         // @todo load path from routing.yml
@@ -170,6 +178,9 @@ class Connector
 
 
         System::getContainer()->get('session')->set('phpbb_user', $result->data);
+        // Avoid multiple calls per request
+        $loggedInCallCount = System::getContainer()->get('request_stack')->getCurrentRequest()->attributes->get('phpbb_loggedin_call_count', 0);
+        System::getContainer()->get('request_stack')->getCurrentRequest()->attributes->set('phpbb_loggedin_call_count', $loggedInCallCount + 1);
 
 
         return (boolean)$result->logged_in;
