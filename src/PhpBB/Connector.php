@@ -372,6 +372,7 @@ class Connector
         // Enforce the forwared_for_check to 0, because we switching from live accessing the forum (no proxy)
         // to internal requests via contao all the time
         $this->updateDbConfig('forwarded_for_check', 0);
+        $this->updateDbConfig('ip_check', 0);
     }
 
     /**

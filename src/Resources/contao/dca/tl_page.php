@@ -128,6 +128,7 @@ class tl_page_phpbbforum extends tl_page {
             'contao.db' => $db
         ));
         System::getContainer()->get('phpbb_bridge.connector')->setMandatoryDbConfigValues();
+        Message::addInfo('<strong>You may want to clear the forum cache to make sure the new values are active</strong>');
         System::getContainer()->get('phpbb_bridge.connector')->testCookieDomain();
     }
 
