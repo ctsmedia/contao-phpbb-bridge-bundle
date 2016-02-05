@@ -17,13 +17,13 @@ phpbb 3.1 Bridge for Contao 4
 
 | Insert Tag | Description |
 | ---------- | ----------- |
-| {{phpbb_bridge:page_profile}} | Generates the link to the phpbb profile of the current logged in user (or to the Anonymous user if not logged in) |
-| {{phpbb_bridge:page_login}} | Link to the phpbb login page |
-| {{phpbb_bridge:page_logout}} | Link the phpbb logout page (uses the session id which is needed) |
-| {{phpbb_bridge:page_register}} | Link the register phpbb page (uses the session id which is needed) |
-| {{phpbb_bridge:page_resetpassword}} | Link to the phpbb send password page |
-| {{phpbb_bridge:page_ucp}} | Link to the phpbb user control panel. |
-| {{phpbb_bridge_user_profile:*}} | Generates the link to the phpbb user profile page. Accepts user id or username |
+| {{phpbb_bridge::page_profile}} | Generates the link to the phpbb profile of the current logged in user (or to the Anonymous user if not logged in) |
+| {{phpbb_bridge::page_login}} | Link to the phpbb login page |
+| {{phpbb_bridge::page_logout}} | Link the phpbb logout page (uses the session id which is needed) |
+| {{phpbb_bridge::page_register}} | Link the register phpbb page (uses the session id which is needed) |
+| {{phpbb_bridge::page_resetpassword}} | Link to the phpbb send password page |
+| {{phpbb_bridge::page_ucp}} | Link to the phpbb user control panel. |
+| {{phpbb_bridge_user_profile::*}} | Generates the link to the phpbb user profile page. Accepts user id or username |
 
 ## Known Issues \ Limitations
 
