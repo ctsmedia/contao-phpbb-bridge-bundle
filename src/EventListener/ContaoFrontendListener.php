@@ -11,6 +11,7 @@
 
 namespace Ctsmedia\Phpbb\BridgeBundle\EventListener;
 
+use Contao\Database;
 use Contao\Encryption;
 use Contao\FrontendUser;
 use Contao\Input;
@@ -51,10 +52,20 @@ class ContaoFrontendListener
     public function onImportUser($username, $password, $scope)
     {
         if ($scope == 'tl_member') {
+
+            // Before we try to import a user, we must check is username is maybe = username_clean
+            // We already now that the user could not be found by username column
+            if(($real_username = $this->findByCleanUsername($username)) != ''){
+                // So we found the user by it's clean username, then we overwrite the POST Value
+                // because contao will recheck it.
+                Input::setPost('username', $real_username);
+                return true;
+            }
+
             $loginResult = System::getContainer()->get('phpbb_bridge.connector')->login($username, $password, false, true);
             // Only import user if login to forum succeeded
             if ($loginResult === true) {
-                System::log("Importing User: ".$username, __METHOD__ ,TL_ACCESS);
+                System::log("Trying to import User: ".$username, __METHOD__ ,TL_ACCESS);
                 // Try to import the user to contao (tl_member / frontend)
                 $importResult = System::getContainer()->get('phpbb_bridge.connector')->importUser($username, $password);
                 return $importResult; // Should usually be true
@@ -179,6 +190,30 @@ class ContaoFrontendListener
         }
 
         return $value;
+    }
+
+
+
+    /**
+     * Find a user in the database
+     *
+     * @param mixed  $username  The clean username
+     *
+     * @return string The correspondending username or an empty string
+     */
+    protected function findByCleanUsername($username)
+    {
+        $db = Database::getInstance();
+        $objResult = $db->prepare("SELECT username FROM tl_member WHERE username_clean=?")
+            ->limit(1)
+            ->execute($username);
+
+        if ($objResult->numRows > 0)
+        {
+            return $objResult->row()['username'];
+        }
+
+        return '';
     }
 
 

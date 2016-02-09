@@ -321,6 +321,7 @@ class Connector
             $contaoUser = new MemberModel();
 
             $contaoUser->username = $user->username;
+            $contaoUser->username_clean = $user->username_clean;
             $contaoUser->email = $user->user_email;
             $contaoUser->firstname = 'Vorname';
             $contaoUser->lastname = 'Nachname';
@@ -335,7 +336,13 @@ class Connector
 
             // @todo add try catch, make it more safe, logout phpbb user on fail?
             $contaoUser->save();
-            System::log('User imported: ' . $username, __METHOD__, TL_ACCESS);
+            System::log('User imported: ' . $contaoUser->username, __METHOD__, TL_ACCESS);
+
+            // username_clean used for login
+            if($username != $contaoUser->username){
+                Input::setPost('username', $contaoUser->username);
+            }
+
             return true;
 
         } else {
