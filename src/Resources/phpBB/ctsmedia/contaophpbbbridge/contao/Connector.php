@@ -201,6 +201,12 @@ class Connector
      */
     public function loadLayout()
     {
+        $sections = array();
+        // The request comes from contao. Maybe from a hook like credentialCheck, importUser so we skip
+        if ($this->request->header('X-Requested-With') == 'ContaoPhpbbBridge') {
+            return false;
+        };
+
         $browser = $this->initContaoRequest();
         $headers = $this->initContaoRequestHeaders();
 
@@ -228,7 +234,6 @@ class Connector
 
 
 
-        $sections = array();
         if ($this->isJsonResponse($response)) {
             $sections = $jsonData = json_decode($response->getContent());
 

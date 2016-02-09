@@ -48,6 +48,8 @@ class Connector
 
     protected $config = null;
 
+    protected $debug = false;
+
 
     public function __construct(Connection $db)
     {
@@ -79,6 +81,7 @@ class Connector
      */
     public function getCurrentUser()
     {
+        if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
         // Checks session if user data is already initialized (and not anonym user) or tries to check status (which then set user data to session)
         if ( (System::getContainer()->get('session')->get('phpbb_user') && System::getContainer()->get('session')->get('phpbb_user')->user_id != 1)
             || $this->isLoggedIn())
@@ -153,6 +156,7 @@ class Connector
      */
     public function isLoggedIn()
     {
+        if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
         // Avoid multiple calls per request
         if(
             System::getContainer()->get('request_stack')->getCurrentRequest()->attributes->get('phpbb_loggedin_call_count', 0) > 0
@@ -194,6 +198,7 @@ class Connector
      * @throws \Exception
      */
     public function syncForumSession(){
+        if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
         $browser = $this->initForumRequest();
         $headers = $this->initForumRequestHeaders();
 
@@ -225,6 +230,7 @@ class Connector
      */
     public function logout()
     {
+        if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
         $cookie_prefix = $this->getDbConfig('cookie_name');
         $sid = Input::cookie($cookie_prefix . '_sid');
 
@@ -253,6 +259,7 @@ class Connector
      */
     public function login($username, $password, $autologin = false, $forceToSend = false)
     {
+        if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
         // @todo login againt bridge controller
         $loginUrl = Environment::get('url') . '/' . $this->getForumPath() . '/ucp.php?mode=login';
         $formFields = array(
@@ -311,6 +318,7 @@ class Connector
      */
     public function importUser($username, $password)
     {
+        if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
 
         // Find User in forum
         $user = $this->getUser($username);
@@ -476,6 +484,7 @@ class Connector
      */
     public function clearForumCache()
     {
+        if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
         $browser = $this->initForumRequest();
         $headers = $this->initForumRequestHeaders();
 
