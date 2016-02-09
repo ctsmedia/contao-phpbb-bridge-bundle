@@ -326,7 +326,13 @@ class Connector
         if ($user) {
 
             System::log('Importing User ' . $username, __METHOD__, TL_ACCESS);
-            $contaoUser = new MemberModel();
+
+            // Try to find user by real username if he entered username_clean
+            // he may not be imported yet with it's clean username
+            $contaoUser = MemberModel::findByUsername($user->username);
+            if(null == $contaoUser){
+                $contaoUser = new MemberModel();
+            }
 
             $contaoUser->username = $user->username;
             $contaoUser->username_clean = $user->username_clean;

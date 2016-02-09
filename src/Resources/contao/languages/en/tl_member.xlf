@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.1">
+  <file datatype="php" original="src/Resources/contao/languages/en/tl_member.php" source-language="en">
+    <body>
+      <trans-unit id="tl_member.username_clean.0">
+        <source>Username Clean</source>
+      </trans-unit>
+      <trans-unit id="tl_member.username_clean.1">
+        <source>The clean username derivat.</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

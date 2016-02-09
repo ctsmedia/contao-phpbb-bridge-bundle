@@ -11,7 +11,7 @@
 
 $GLOBALS['TL_DCA']['tl_member']['fields']['username_clean'] = array
 (
-    'label'                   => &$GLOBALS['TL_LANG']['tl_member']['username'],
+    'label'                   => &$GLOBALS['TL_LANG']['tl_member']['username_clean'],
     'exclude'                 => true,
     'search'                  => true,
     'sorting'                 => true,
@@ -20,3 +20,13 @@ $GLOBALS['TL_DCA']['tl_member']['fields']['username_clean'] = array
     'eval'                    => array('mandatory'=>true, 'unique'=>true, 'rgxp'=>'extnd', 'nospace'=>true, 'maxlength'=>64,),
     'sql'                     => "varchar(64) COLLATE utf8_bin NULL"
 );
+
+
+$newMemberListFieldsArray = [];
+foreach($GLOBALS['TL_DCA']['tl_member']['list']['label']['fields'] as $value ) {
+    $newMemberListFieldsArray[] = $value;
+    if($value == 'username') {
+        $newMemberListFieldsArray[] = 'username_clean';
+    }
+}
+$GLOBALS['TL_DCA']['tl_member']['list']['label']['fields'] = $newMemberListFieldsArray;
