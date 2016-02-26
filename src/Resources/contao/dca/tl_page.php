@@ -50,7 +50,7 @@ $GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_dynamic_layout'] = array
 
 $GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_default_groups'] = array
 (
-    'label'                   => &$GLOBALS['TL_LANG']['tl_member']['groups'],
+    'label'                   => &$GLOBALS['TL_LANG']['tl_page']['phpbb_default_groups'],
     'exclude'                 => true,
     'filter'                  => true,
     'inputType'               => 'checkboxWizard',

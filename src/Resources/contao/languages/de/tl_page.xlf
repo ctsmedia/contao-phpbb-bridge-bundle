@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.1">
+    <file datatype="php" original="src/Resources/contao/languages/en/tl_page.php" source-language="en">
+        <body>
+            <trans-unit id="tl_page.phpbb_legend">
+                <source>phpBB Bridge - Page Settings</source>
+                <target>phpBB Bridge - Einstellungen</target>
+            </trans-unit>
+            <trans-unit id="tl_page.phpbb_alias.0">
+                <source>phpBB Url Alias</source>
+                <target>Forum Url Alias</target>
+            </trans-unit>
+            <trans-unit id="tl_page.phpbb_alias.1">
+                <source>Enter the alias you forum shall be reachable in the frontend. Examples: forum or phpbb </source>
+                <target>Geben Sie den Url pfad / alias ein unter dem das Forum im Frontend erreichbar sein soll.</target>
+            </trans-unit>
+            <trans-unit id="tl_page.phpbb_path.0">
+                <source>phpBB Path</source>
+                <target>phpBB Installations Pfad</target>
+            </trans-unit>
+            <trans-unit id="tl_page.phpbb_path.1">
+                <source>Enter the path to your phpbb Installation. Can be absolute or relative to your Contao Installation (from the public web folder)</source>
+                <target>Geben Sie den Pfad zur phpBB Installation an. Kann absolut oder relativ sein (relativ vom Contao web Verzeichniss)</target>
+            </trans-unit>
+            <trans-unit id="tl_page.phpbb_default_groups.0">
+                <source>Default Member Group(s)</source>
+                <target>Standard Mitglieder Gruppe(n)</target>
+            </trans-unit>
+            <trans-unit id="tl_page.phpbb_default_groups.1">
+                <source>Choose the member groups newly imported users from phpbb will be assigned to</source>
+                <target>Wählen Sie die Mitgliedergruppe(n) aus, die neuen phpbb Usern automatisch zugewiesen werden</target>
+            </trans-unit>
+            <trans-unit id="tl_page.phpbb_dynamic_layout.0">
+                <source>*Deprecated* Generate / Load the Contao Layout on each Forum request</source>
+                <target>*Deprecated* Lädt das Contao Layout dynamisch bei jeden Request</target>
+            </trans-unit>
+            <trans-unit id="tl_page.phpbb_dynamic_layout.1">
+                <source>If not set the outer layout will be static rendered only once. Does then not allow dynamic contents in the layout. Will be set to always on in the future.</source>
+                <target>Wenn nicht gesetzt wird das Layout statisch einmal generiert. Erlaubt keine dynamischen Inhalte im Layout. (Wird demnächst standardmäßig immer aktiviert sein)</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
