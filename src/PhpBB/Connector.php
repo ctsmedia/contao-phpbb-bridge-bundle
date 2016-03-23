@@ -216,7 +216,7 @@ class Connector
                 /* @var $cookie Cookie */
 
                 // Stream cookies through to the client
-                System::setCookie($cookie->getName(), $cookie->getValue(), (int)$cookie->getAttribute('expires'),
+                System::setCookie($cookie->getName(), $cookie->getValue(), strtotime($cookie->getAttribute('expires')),
                     $cookie->getAttribute('path'), $cookie->getAttribute('domain'));
             }
             return (boolean)$result->logged_in;
@@ -287,7 +287,7 @@ class Connector
             /* @var $cookie Cookie */
 
             // Stream cookies through to the client
-            System::setCookie($cookie->getName(), $cookie->getValue(), (int)$cookie->getAttribute('expires'),
+            System::setCookie($cookie->getName(), $cookie->getValue(), strtotime($cookie->getAttribute('expires')),
                 $cookie->getAttribute('path'), $cookie->getAttribute('domain'));
 
             // Get phpbb cookies
