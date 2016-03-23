@@ -32,7 +32,7 @@ docker.sftp = {
 var srcVendors = [
         'vendor/contao/core-bundle/src/**/*', // Some vendors, for debugging purposes
     ],
-    srcBridge = 'src/**/*';
+    srcBridge = ['src/**/*','!src/**/*___jb_tmp___'];
 
 
 // Run this before all other tasks

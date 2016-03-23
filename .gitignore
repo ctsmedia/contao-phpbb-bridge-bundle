@@ -4,6 +4,7 @@ nbproject/
 
 #### Composer
 /vendor/
+/src/Resources/phpBB/ctsmedia/contaophpbbbridge/vendor/
 
 #### Other
 gulp.config.js
