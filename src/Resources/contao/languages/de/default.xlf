@@ -4,7 +4,7 @@
           target-language="de">
         <body>
             <trans-unit id="PTY.phpbb_forum.0">
-                <source>PhpBB Forum page</source>
+                <source>PhpBB Forum Page</source>
                 <target>PhpBB Forum Seite</target>
             </trans-unit>
             <trans-unit id="PTY.phpbb_forum.1">

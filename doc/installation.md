@@ -50,17 +50,19 @@ or:
       }
     ```
     
-    Add the phpbb Bridge routes to the contao installation. **Make sure this is added before the contao route bundle: ContaoCoreBundle:**
+    Add the phpbb Bridge routes to the contao installation in `contao/app/config/routing.yml`. **Make sure this is added before the contao route bundle: ContaoCoreBundle:**
     ```yml
         CtsmediaPhpbbBridgeBundle:
             resource: "@CtsmediaPhpbbBridgeBundle/Resources/config/routing.yml" 
     ```
+    
+2.1 If you've installed phpbb into another db the module needs to know about it. See the [configuration section](#phpbb-config)
 
 3. Go to module subfolder `contaoroot/vendor/ctsmedia/contao-phpbb-bridge-bundle/src/Resources/phpBB/ctsmedia/contaophpbbbridge` and run `composer install`
 This will install a needed http library to communicate with contao. phpbb is currently not able to install module dependencies by itself. 
 In release versions we will pre compile the dependencies for phpbb 
     
-4. Login to the Contao Backend and create a Page of type 'PhpBB Forum Site' and configure it appropriate. You'll get some log messages of something fails / succeeds.
+4. Login to the Contao Backend and create a Page of type 'PhpBB Forum Page' and configure it appropriate. You'll get some log messages of something fails / succeeds.
 Important is the alias and path to the forum. The Bridge module will create a symlink to it so you can access the forum right on. 
 
     4.1 Go to the settings section and save once. The session expire and autologin time now get synced. You should get 2 confirmation messages. Always change those values from the contao side. 
@@ -80,13 +82,7 @@ for your domain on your server. So the requests never leave the server.
 
 #### Contao 
 
-##### Forum Page Type
-
-* TODO: Explain alias
-* TODO: Explain path
-* TODO: css class
-* TODO: dynamic_layout
-
+You find all the info needed in the backend.
 
 #### phpBB
 
@@ -99,7 +95,7 @@ See step 5 and 6 of installation process
 
 #### Config Files
 
-##### phpBB DB
+##### <a name="phpbb-config"></a> phpBB DB
 If phpBB is installed in it's own DB the bridge needs to know this.
 Add the db connection and make the bridge aware in config.yml:
 ```yml
@@ -131,3 +127,5 @@ services:
         arguments: 
             - "@doctrine.dbal.phpbb_connection"                
 ```
+
+Then set the parameters in the `parameters.yml`

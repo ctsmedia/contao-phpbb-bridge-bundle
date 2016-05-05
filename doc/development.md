@@ -43,9 +43,11 @@ or via the host entry: `http://phpbbbridge.contao.local/install.php` and follow 
 You've 
 
 Additional Info: 
-You can use mysql root user with no password. There are two dbs created already: `contao` and `phpbb`. You can either one db for both or seperate them.
+- You can use mysql root user with no password. There are two dbs created already: `contao` and `phpbb`. You can either one db for both or seperate them.
 The path to phpbb is /var/www/share/${DOCKER_DOMAIN}/phpbb where ${DOCKER_DOMAIN} is set to whatever you've set in the Dockerfile. 
 By default it is: /var/www/share/phpbbbridge.contao.local/phpbb
+- You may want to change your dir permission settings so the brigde can create some needed files. They get automatically ignored via .gitignore. Just run
+`find . -type d -exec chmod 0777 {} \;` so the bridge is able to write those files. This is only needed if you mount the git repos into the container. 
 
 
 #### Access your container

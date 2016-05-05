@@ -105,8 +105,14 @@ class tl_page_phpbbforum extends tl_page {
             return;
         }
 
-        Message::addInfo("Updating Config");
         $row = $dc->activeRecord->row();
+
+        // If it's a new object with no values we can skip here
+        if(empty($row['phpbb_path']) && empty($row['phpbb_alias'])){
+            return;
+        }
+
+        Message::addInfo("Updating Config");
         $row['skipInternalHook'] = true;
         $url = Controller::generateFrontendUrl($row);
 
@@ -141,9 +147,15 @@ class tl_page_phpbbforum extends tl_page {
             return;
         }
 
+        $row = $dc->activeRecord->row();
+
+        // If it's a new object with no values we can skip here
+        if(empty($row['phpbb_path']) && empty($row['phpbb_alias'])){
+            return;
+        }
+
         Message::addInfo("Generating Layout");
 
-        $row = $dc->activeRecord->row();
         $row['skipInternalHook'] = true;
         $url = Controller::generateFrontendUrl($row, null, null, false);
 
