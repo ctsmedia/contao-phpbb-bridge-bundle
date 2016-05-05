@@ -1,7 +1,5 @@
 // Dependencies
-var gulp = require('gulp'),
-    gsftp = require('gulp-sftp'),
-    watch = require('gulp-watch');
+var gulp = require('gulp');
 
 var exec = require('child_process').execSync;
 var fs = require('fs');
@@ -11,28 +9,14 @@ var fs = require('fs');
 var docker = {
     domain: 'phpbbbridge.contao.local',
     container: 'phpbb_bridge',
-    remotePath: '/var/www/share/phpbbbridge.contao.local/contao',
     user: 'root'
 };
 docker.cmd = {
-    run: 'docker run -it --name '+docker.container+' phpbb_bridge:latest /sbin/my_init --enable-insecure-key',
+    run: 'docker run -d --name '+docker.container+' ctsmedia/phpbb_bridge:latest /sbin/my_init --enable-insecure-key',
+    run_dev: 'docker run -d -v $(pwd):/var/www/share/phpbbbridge.contao.local/contao/vendor/ctsmedia/contao-phpbb-bridge-bundle --name '+docker.container+' ctsmedia/phpbb_bridge:latest /sbin/my_init --enable-insecure-key',
     start: 'docker start '+docker.container,
     getIp: 'docker inspect --format  \'{{ .NetworkSettings.IPAddress }}\' '+docker.container
 };
-docker.sftp = {
-    host:docker.domain,
-    user:docker.user,
-    remotePath: docker.remotePath,
-    remotePathBridge: docker.remotePath + '/vendor/ctsmedia/contao-phpbb-bridge-bundle',
-    remotePathVendors: docker.remotePath + '/vendor',
-    passphrase: null
-};
-
-// src dirs
-var srcVendors = [
-        'vendor/contao/core-bundle/src/**/*', // Some vendors, for debugging purposes
-    ],
-    srcBridge = ['src/**/*','!src/**/*___jb_tmp___'];
 
 
 // Run this before all other tasks
@@ -65,8 +49,11 @@ gulp.task('docker:init', ['init'], function (cb) {
         exec('docker ps -a | grep -wc ' + docker.container);
     } catch(error) {
         console.log(error);
-        console.log("No Docker Container found. (was looking for "+docker.container+"). You have to run it by yourself:");
+        console.log("No Docker Container found. (was looking for "+docker.container+"). You have to run it by yourself.");
+        console.log("Testing / Trial: ");
         console.log(docker.cmd.run);
+        console.log("Local Development (doc/development.md): ");
+        console.log(docker.cmd.run_dev);
         return cb(new Error("No Docker Container found. (was looking for "+docker.container+")."));
     }
     console.log("Container found. Testing if it started...");
@@ -117,36 +104,6 @@ gulp.task('docker:init', ['init'], function (cb) {
     cb();
 
 });
-
-
-/*************************************************
- * Watch tasks
- ************************************************/
-// Docker Watcher
-// Uploads files automatically
-gulp.task('docker:watch', ['docker:init'], function () {
-
-    // Watch the Module dir and upload on changes to docker
-    watch(srcBridge, function(vynil){
-        var ftpData = docker.sftp;
-        ftpData.remotePath = ftpData.remotePathBridge;
-        console.log('Module File ' + vynil.path + ' was ' + vynil.event + ', running docker sftp...');
-        console.log(docker.sftp);
-        gulp.src(vynil.path, {base: './'})
-            .pipe(gsftp(ftpData));
-    });
-
-    // Watch the Vendors dir and upload on changes to docker
-    watch(srcVendors, function(vynil){
-        console.log('Module File ' + vynil.path + ' was ' + vynil.event + ', running docker sftp...');
-        var ftpData = docker.sftp;
-        ftpData.remotePath = ftpData.remotePathVendors;
-        gulp.src(vynil.path, {base: './vendor/'})
-            .pipe(gsftp(ftpData));
-    });
-
-});
-
 
 
 

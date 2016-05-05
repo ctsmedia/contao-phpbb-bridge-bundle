@@ -35,6 +35,5 @@
             "Ctsmedia\\Phpbb\\BridgeBundle\\": "src/"
         }
     },
-    "minimum-stability": "dev",
     "prefer-stable": true
 }
