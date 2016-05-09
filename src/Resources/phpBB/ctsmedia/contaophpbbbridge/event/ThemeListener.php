@@ -53,25 +53,20 @@ class ThemeListener implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return array(
-            'core.page_header' => 'injectThemeHeader',
-            'core.page_footer' => 'injectThemeFooter'
+            'core.page_header' => 'initContaoLayout',
+            'core.page_footer' => 'postProcessLayout'
         );
     }
 
     /**
+     * Load and set Layout Sections during
+     * early phpbb page / template processing
+     *
      * @param Event $event
      */
-    public function injectThemeHeader(data $event) {
+    public function initContaoLayout(data $event) {
 
-        // Overwrite Header
-        //$data = $event->get_data();
-        //$data['page_header_override'] = true;
-        //$data['page_title'] = "xxx";
-        //$event->set_data($data);
-
-        //@todo replace with http library (buzz)
-
-        // Load dynamic rendered layout sections (this is optional, otherwise static content will be used)
+        // Load dynamic rendered layout sections
         // and syncs session for loggedin users
         $sections = $this->contaoConnector->loadLayout();
 
@@ -85,15 +80,17 @@ class ThemeListener implements EventSubscriberInterface
     }
 
     /**
+     * Do some postprocessing just before the page gets rendered
+     *
      * @param Event $event
      */
-    public function injectThemeFooter(Event $event) {
+    public function postProcessLayout(Event $event) {
 
         if(isset($this->config['body_class'])) {
             $this->template->append_var('BODY_CLASS', $this->config['body_class']);
         }
 
-        // $this->contaoConnector->test();
+        //$this->contaoConnector->test();
 
     }
 
