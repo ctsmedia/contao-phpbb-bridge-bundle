@@ -46,9 +46,21 @@ class SyncSessionListener
 
         // Only sync for frontend users and if it's not alreay a internal request
         if(!$event->getRequest()->attributes->get('isInternalForumRequest', false)) {
+
+            // debug cookie and url
+            // @todo remove if not needed anymore
+            $cookies = System::getContainer()->get('request_stack')->getCurrentRequest()->headers->get('cookie');
+            $cookies = explode(";", $cookies);
+            foreach ($cookies as $index => $cookie){
+                if(strpos($cookie, 'phpbb') === false) unset($cookies[$index]);
+            }
+            $cookies = implode("||", $cookies);
+            $url = System::getContainer()->get('request_stack')->getCurrentRequest()->getPathInfo();
+
             $result = System::getContainer()->get('phpbb_bridge.connector')->syncForumSession();
             if($result === false) {
-                System::log($user->username . ' is loggend in to contao but not to the forum (anymore)', __METHOD__, TL_ERROR);
+                System::log($user->username . ' ilC iNlF '.$url.' || '.$cookies, __METHOD__, TL_ERROR);
+                $user->logout();
             }
         }
     }
