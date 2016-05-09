@@ -164,7 +164,11 @@ class ConnectController extends Controller
         $this->validateRequest();
 
         $objPage = PageModel::findOneByType('phpbb_forum');
-        Environment::set('relativeRequest', $objPage->alias);
+        // Set the correct current page for navigation
+        Environment::set('relativeRequest',
+            $this->container->get('phpbb_bridge.connector')->getBridgeConfig('forum_pageId')
+            .$GLOBALS['TL_CONFIG']['urlSuffix']
+        );
         $response = $this->frontendIndex->run();
         if ($objPage instanceof PageModel) {
             $page = new Forum();
