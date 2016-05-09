@@ -62,21 +62,14 @@ class Forum extends PageRegular
         $overall_footer = '';
         $sections = $this->generateLayoutSections($response->getContent());
 
-        if ($objPage->phpbb_dynamic_layout == 1) {
 
-            // template vars will be replaced with dynamic content on each request
-            $overall_header = '{CONTAO_LAYOUT_HEADER}';
-            $overall_footer = '{CONTAO_LAYOUT_FOOTER}';
+        // template vars will be replaced with dynamic content on each request
+        $overall_header = '{CONTAO_LAYOUT_HEADER}';
+        $overall_footer = '{CONTAO_LAYOUT_FOOTER}';
 
-            // If dynamic generation is set and json format requested we can return and leave (no need to generate files)
-            if ($this->Input->get('format') == 'json') {
-                return new JsonResponse($sections);
-            }
-
-        // if we've no dynamic layout we generate put the content
-        } elseif ($objPage->phpbb_dynamic_layout != 1) {
-            $overall_header = $sections['overall_header'];
-            $overall_footer = $sections['overall_footer'];
+        // If dynamic generation is set and json format requested we can return and leave (no need to generate files)
+        if ($this->Input->get('format') == 'json') {
+            return new JsonResponse($sections);
         }
 
 

@@ -23,12 +23,6 @@
             <trans-unit id="tl_page.phpbb_default_groups.1">
                 <source>Choose the member groups newly imported users from phpbb will be assigned to</source>
             </trans-unit>
-            <trans-unit id="tl_page.phpbb_dynamic_layout.0">
-                <source>*Deprecated* Generate / Load the Contao Layout on each Forum request</source>
-            </trans-unit>
-            <trans-unit id="tl_page.phpbb_dynamic_layout.1">
-                <source>If not set the outer layout will be static rendered only once. Does then not allow dynamic contents in the layout. Will be set to always on in the future.</source>
-            </trans-unit>
         </body>
     </file>
 </xliff>

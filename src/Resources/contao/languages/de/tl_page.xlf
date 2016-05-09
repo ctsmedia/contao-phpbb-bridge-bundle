@@ -30,14 +30,6 @@
                 <source>Choose the member groups newly imported users from phpbb will be assigned to</source>
                 <target>Wählen Sie die Mitgliedergruppe(n) aus, die neuen phpbb Usern automatisch zugewiesen werden</target>
             </trans-unit>
-            <trans-unit id="tl_page.phpbb_dynamic_layout.0">
-                <source>*Deprecated* Generate / Load the Contao Layout on each Forum request</source>
-                <target>*Deprecated* Lädt das Contao Layout dynamisch bei jeden Request</target>
-            </trans-unit>
-            <trans-unit id="tl_page.phpbb_dynamic_layout.1">
-                <source>If not set the outer layout will be static rendered only once. Does then not allow dynamic contents in the layout. Will be set to always on in the future.</source>
-                <target>Wenn nicht gesetzt wird das Layout statisch einmal generiert. Erlaubt keine dynamischen Inhalte im Layout. (Wird demnächst standardmäßig immer aktiviert sein)</target>
-            </trans-unit>
         </body>
     </file>
 </xliff>

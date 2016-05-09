@@ -424,7 +424,6 @@ class Connector
      * forum_pageAlias: Path to the forum for accessable urls f.e. 'phpbb' so the forum is accessable under 'http://phpbbbridge.contao.local/phpbb/index.php'
      * url: Main Url f.e. http://phpbbbridge.contao.local
      * body_class: String - From the layout configuration
-     * load_dynamic_layout: 1|0
      *
      * @return mixed|null
      */

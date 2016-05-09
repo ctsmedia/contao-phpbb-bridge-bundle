@@ -9,7 +9,7 @@
  * 
  */
 
-$GLOBALS['TL_DCA']['tl_page']['palettes']['phpbb_forum'] = '{title_legend},title,type;{phpbb_legend},phpbb_alias,phpbb_path,phpbb_default_groups;{layout_legend:hide},includeLayout;cssClass,phpbb_dynamic_layout;{tabnav_legend:hide},tabindex,accesskey;{publish_legend},published';
+$GLOBALS['TL_DCA']['tl_page']['palettes']['phpbb_forum'] = '{title_legend},title,type;{phpbb_legend},phpbb_alias,phpbb_path,phpbb_default_groups;{layout_legend:hide},includeLayout;cssClass;{tabnav_legend:hide},tabindex,accesskey;{publish_legend},published';
 
 $GLOBALS['TL_DCA']['tl_page']['config']['onsubmit_callback'][] = array('tl_page_phpbbforum', 'updateConfig');
 $GLOBALS['TL_DCA']['tl_page']['config']['onsubmit_callback'][] = array('tl_page_phpbbforum', 'generateForumLayout');
@@ -37,15 +37,6 @@ $GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_path'] = array
     (
         array('tl_page_phpbbforum', 'generatePhpbbLink')
     ),
-);
-// @todo add translations and label texts
-$GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_dynamic_layout'] = array
-(
-    'label'                   => &$GLOBALS['TL_LANG']['tl_page']['phpbb_dynamic_layout'],
-    'exclude'                 => true,
-    'inputType'               => 'checkbox',
-    'eval'                    => array('tl_class'=>'w50 m12'),
-    'sql'                     => "char(1) NOT NULL default ''"
 );
 
 $GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_default_groups'] = array
@@ -128,7 +119,6 @@ class tl_page_phpbbforum extends tl_page {
             'contao.forum_pageId' => $dc->activeRecord->id,
             'contao.forum_pageUrl' => Environment::get('url').'/'.$url,
             'contao.url' => Environment::get('url'),
-            'contao.load_dynamic_layout' => $dc->activeRecord->phpbb_dynamic_layout,
             'contao.forum_pageAlias' => $dc->activeRecord->phpbb_alias,
             'contao.bridge_is_installed' => true,
             'contao.db' => $db

@@ -73,19 +73,13 @@ class ThemeListener implements EventSubscriberInterface
 
         // Load dynamic rendered layout sections (this is optional, otherwise static content will be used)
         // and syncs session for loggedin users
-        if( true === (bool)$this->config['load_dynamic_layout']){
+        $sections = $this->contaoConnector->loadLayout();
 
-            $sections = $this->contaoConnector->loadLayout();
-
-            if(isset($sections->overall_header)) {
-                $this->template->assign_var('CONTAO_LAYOUT_HEADER', $sections->overall_header);
-            }
-            if(isset($sections->overall_footer)) {
-                $this->template->assign_var('CONTAO_LAYOUT_FOOTER', $sections->overall_footer);
-            }
-        // if we don't load the layout dynamically and the session user is logged in, we've to send a ping
-        } elseif($this->contaoConnector->isLoggedIn()) {
-            $this->contaoConnector->syncContaoSession();
+        if(isset($sections->overall_header)) {
+            $this->template->assign_var('CONTAO_LAYOUT_HEADER', $sections->overall_header);
+        }
+        if(isset($sections->overall_footer)) {
+            $this->template->assign_var('CONTAO_LAYOUT_FOOTER', $sections->overall_footer);
         }
 
     }
