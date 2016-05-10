@@ -44,6 +44,37 @@ class AuthProvider extends db
     }
 
     /**
+     * Tries to autologin a user
+     *
+     * @return array
+     */
+    public function autologin() {
+
+        $user_data = [];
+
+        //Try to autologin via contao
+        try {
+            $userId = $this->contaoConnector->autologin();
+        // The exception is thrown if no suitable Contao Cookie is found
+        // so the request can be saved
+        } catch(\InvalidArgumentException $e) {
+            return $user_data;
+        }
+
+        // If found look for the user in phpbb db
+        if($userId > ANONYMOUS){
+            $sql = 'SELECT u.*
+				FROM ' . USERS_TABLE .' u 
+				WHERE u.user_id = ' . (int) $userId . '
+                AND u.user_type IN (' . USER_NORMAL . ', ' . USER_FOUNDER . ')';
+            $result = $this->db->sql_query($sql);
+            $user_data = $this->db->sql_fetchrow($result);
+        }
+
+        return $user_data;
+    }
+
+    /**
      * Login a user to phpbb and on success also to contao
      *
      * @param string $username

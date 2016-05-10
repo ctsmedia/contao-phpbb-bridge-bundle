@@ -18,9 +18,12 @@ use Buzz\Message\RequestInterface;
 use Buzz\Message\Response;
 use Buzz\Util\Cookie;
 use Buzz\Util\CookieJar;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use phpbb\auth\auth;
 use phpbb\db\driver\mysql;
 use phpbb\request\request;
+use phpbb\request\request_interface;
 use phpbb\user;
 
 require_once __DIR__ . "/../vendor/autoload.php";
@@ -62,6 +65,12 @@ class Connector
 
         $this->contaoDbConfig = $contaoDbConfig;
         $this->contaoDb = null;
+
+        $this->logger = new Logger('bridge_connector');
+        $this->logger->pushHandler(new StreamHandler(__DIR__.'/../bridge_error.log'), Logger::ERROR);
+        if($this->debug === true) {
+            $this->logger->pushHandler(new StreamHandler(__DIR__.'/../bridge.log'), Logger::DEBUG);
+        }
     }
 
     /**
@@ -93,6 +102,58 @@ class Connector
         echo $response->getContent();
         exit;
 
+    }
+
+    /**
+     * Ask Contao if it can autologin the current user / session
+     * and return the authenticated phpbb user id if found
+     * 
+     * @throws \InvalidArgumentException
+     * @return int phpBB User ID
+     */
+    public function autologin(){
+        $userId = ANONYMOUS;
+
+        // First tests if we found a contao autologin cookie. 
+        // otherwise we can stop here
+        $cookies = $this->request->variable_names(request_interface::COOKIE);
+        $autoLoginCookieFound = false;
+        foreach ($cookies as $cookieName) {
+            if(strpos($cookieName, 'FE_AUTO_LOGIN') === 0){
+                $autoLoginCookieFound = true;
+            }
+        }
+        
+        if($autoLoginCookieFound !== true) {
+            throw new \InvalidArgumentException('No Autologin Cookie found');
+        }
+        
+        // Init request
+        $browser = $this->initContaoRequest();
+        $headers = $this->initContaoRequestHeaders();
+
+        // Check contao for autologin
+        /* @var $response Response */
+        $response = $browser->get($this->contao_url . '/phpbb_bridge/autologin', $headers);
+
+        // Contao usually triggers a reload on autologin. We've to catch that here
+        // Wo do ONE retry. the http lib already merges the Cookies like FE_AUTH from the last response
+        if($response->getStatusCode() === 303) {
+            $response = $browser->get($this->contao_url . '/phpbb_bridge/autologin', $headers);
+        }
+
+        if ($this->isJsonResponse($response)) {
+            $jsonData = json_decode($response->getContent());
+            // We found a logged in user. yay
+            if($jsonData->is_logged_in && $jsonData->user_id > ANONYMOUS){
+                $userId = $jsonData->user_id;
+            }
+        // Still no json response. nay :/
+        } else {
+            $this->logger->error("Json Response expected. Got: ", array('status' => $response->getStatusCode(), 'content' => $response->getContent()));
+        }
+
+        return $userId;
     }
 
     /**
@@ -129,26 +190,7 @@ class Connector
 
             if (isset($jsonData->login_status) && $jsonData->login_status == true) {
 
-                // Set cookies from the contao response
-                if ($response->getHeader('set-cookie')) {
-
-                    $delimiter = ' || ';
-                    $cookies = explode($delimiter, $response->getHeader('set-cookie', $delimiter));
-
-                    foreach ($cookies as $cookie) {
-                        header('Set-Cookie: ' . $cookie, false);
-                    }
-
-                    // The following won't work because the expire value is not an int and conversion something like
-                    // 16-Jan-2016 18:07:35 GMT to an int is really unnecessary overhead
-                    // although it's looks cleaner at first like above solution
-                    // $cookieJar = new CookieJar();
-                    // $cookieJar->processSetCookieHeaders($browser->getLastRequest(), $response);
-                    // foreach($cookieJar->getCookies() as $cookie) {
-                    //      setcookie($cookie->getName(), $cookie->getValue(), $cookie->getAttribute('expires'), $cookie->getAttribute('path'), $cookie->getAttribute('domain'), $cookie->getAttribute('secure'),$cookie->getAttribute('httponly'));
-                    // }                  }
-                }
-                return true;
+                $this->sendCookiesFromResponse($response);
             }
         }
         return false;
@@ -178,16 +220,7 @@ class Connector
         if ($this->isJsonResponse($response)) {
             $jsonData = json_decode($response->getContent());
             if (isset($jsonData->logout_status)) {
-                // Set cookies from the contao response
-                if ($response->getHeader('set-cookie')) {
-
-                    $delimiter = ' || ';
-                    $cookies = explode($delimiter, $response->getHeader('set-cookie', $delimiter));
-
-                    foreach ($cookies as $cookie) {
-                        header('Set-Cookie: ' . $cookie, false);
-                    }
-                }
+                $this->sendCookiesFromResponse($response);
                 return $jsonData->logout_status;
             }
         }
@@ -393,6 +426,35 @@ class Connector
     protected function isJsonResponse(Response $response)
     {
         return $response->getStatusCode() == 200 && $response->getHeader('content-type') == 'application/json';
+    }
+
+    /**
+     * Send cookies to client from a contao response object
+     *
+     * @param Response $response
+     * @return bool
+     */
+    protected function sendCookiesFromResponse(Response $response) {
+        // Set cookies from the contao response
+        if ($response->getHeader('set-cookie')) {
+
+            $delimiter = ' || ';
+            $cookies = explode($delimiter, $response->getHeader('set-cookie', $delimiter));
+
+            foreach ($cookies as $cookie) {
+                header('Set-Cookie: ' . $cookie, false);
+            }
+
+            // The following won't work because the expire value is not an int and conversion something like
+            // 16-Jan-2016 18:07:35 GMT to an int is really unnecessary overhead
+            // although it's looks cleaner at first like above solution
+            // $cookieJar = new CookieJar();
+            // $cookieJar->processSetCookieHeaders($browser->getLastRequest(), $response);
+            // foreach($cookieJar->getCookies() as $cookie) {
+            //      setcookie($cookie->getName(), $cookie->getValue(), $cookie->getAttribute('expires'), $cookie->getAttribute('path'), $cookie->getAttribute('domain'), $cookie->getAttribute('secure'),$cookie->getAttribute('httponly'));
+            // }                  }
+        }
+        return true;
     }
 
 }

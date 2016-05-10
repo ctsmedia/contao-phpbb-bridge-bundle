@@ -96,6 +96,7 @@ class Connector
      * Retrieves a users data from phpbb
      *
      *      $phpbbuser = System::getContainer()->get('phpbb_bridge.connector')->getUser('name_of_user');
+     *      echo $phpbbuser->user_id
      *      echo $phpbbuser->username
      *      echo $phpbbuser->user_email
      *      echo $phpbbuser->user_birthday
@@ -149,6 +150,8 @@ class Connector
 
     /**
      * Check if the current user is logged in and append data to session
+     *
+     * @todo at token implementation
      *
      * @todo Implement caching?
      * @return bool

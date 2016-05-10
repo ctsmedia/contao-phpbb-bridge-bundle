@@ -12,6 +12,8 @@
 namespace ctsmedia\contaophpbbbridge\controller;
 
 use ctsmedia\contaophpbbbridge\contao\Connector;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use phpbb\config\config;
 use phpbb\event\dispatcher;
 use phpbb\user;
@@ -53,9 +55,10 @@ class Connect
         $this->rootPath = $root_path;
         $this->phpExt = $php_ext;
 
+        $this->logger = new Logger('bridge_controller');
+        $this->logger->pushHandler(new StreamHandler(__DIR__.'/../bridge_error.log'), Logger::ERROR);
         if($this->debug === true) {
-            $this->logger = new \Monolog\Logger('bridge');
-            $this->logger->pushHandler(new \Monolog\Handler\StreamHandler(__DIR__.'/../bridge.log'));
+            $this->logger->pushHandler(new StreamHandler(__DIR__.'/../bridge.log'), Logger::DEBUG);
         }
 
     }
