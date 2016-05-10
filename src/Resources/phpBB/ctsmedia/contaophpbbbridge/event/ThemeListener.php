@@ -53,6 +53,7 @@ class ThemeListener implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return array(
+            'core.user_setup'	=> 'loadLanguageSetup',
             'core.page_header' => 'initContaoLayout',
             'core.page_footer' => 'postProcessLayout'
         );
@@ -92,6 +93,18 @@ class ThemeListener implements EventSubscriberInterface
 
         //$this->contaoConnector->test();
 
+    }
+
+    /**
+     * Load language Files
+     */
+    public function loadLanguageSetup($event) {
+        $lang_set_ext = $event['lang_set_ext'];
+        $lang_set_ext[] = array(
+            'ext_name' => 'ctsmedia/contaophpbbbridge',
+            'lang_set' => 'common',
+        );
+        $event['lang_set_ext'] = $lang_set_ext;
     }
 
 

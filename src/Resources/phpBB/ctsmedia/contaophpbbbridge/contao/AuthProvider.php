@@ -43,6 +43,33 @@ class AuthProvider extends db
 
     }
 
+
+    /**
+     * The session validation function checks whether the user is still logged
+     * into phpBB.
+     *
+     * @param 	array 	$user
+     * @return 	boolean	true if the given user is authenticated, false if the
+     * 					session should be closed, or null if not implemented.  *
+     * @param array $user
+     * @return bool
+     */
+    public function validate_session($user)
+    {
+        $hasContaoAuthCookie = $this->request->variable('FE_USER_AUTH', false, true, \phpbb\request\request_interface::COOKIE);
+
+        // If we are at a anonymous session but find a active contao user auth cookie the user most likely has logged in
+        // we should try to log the user in
+        if($user['user_id'] == ANONYMOUS && $hasContaoAuthCookie) {
+            return false;
+        }
+
+        // A logout must has happened somewhere.
+        if($user['user_id'] > ANONYMOUS && !$hasContaoAuthCookie) {
+            return false;
+        }
+    }
+
     /**
      * Tries to autologin a user
      *
@@ -83,23 +110,18 @@ class AuthProvider extends db
      */
     public function login($username, $password)
     {
+
         $result = parent::login($username, $password);
         // We only need to trigger contao login if the phpbb login was successful
-        // @todo is it so? Maybe we should interpret the result, especially if it was false???
         if($result['status'] == LOGIN_SUCCESS){
-            $this->contaoConnector->login($username, $password, $this->request->is_set_post('autologin'));
-
-            // if autologin is set to true, we need to set all other sessions of the user to autologin = false
-            // because contao only allows one autologin session per user
-            if($this->request->is_set_post('autologin') && isset($result['user_row']['user_id']) && $result['user_row']['user_id'] > ANONYMOUS){
-                // Update current user session to be not autologin sessions (new one is not created yet)
-                $sql = 'UPDATE ' . SESSIONS_TABLE . ' SET session_autologin = 0 WHERE session_user_id = '."'". $this->db->sql_escape($result['user_row']['user_id']) . "'";
-                $this->db->sql_query($sql);
-                // Remove existing autologin keys
-                $sql = 'DELETE FROM ' . SESSIONS_KEYS_TABLE . '  WHERE user_id = '."'". $this->db->sql_escape($result['user_row']['user_id']) . "'";
-                $this->db->sql_query($sql);
+            $contaoLogin = $this->contaoConnector->login($username, $password, $this->request->is_set_post('autologin'));
+            if($contaoLogin === false) {
+                $result =  array(
+                    'status'	=> LOGIN_ERROR_EXTERNAL_AUTH,
+                    'error_msg'	=> 'CONTAO_LOGIN_FAILED',
+                    'user_row'	=> array('user_id' => ANONYMOUS),
+                );
             }
-
         }
 
         return $result;

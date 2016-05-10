@@ -98,47 +98,6 @@ class ContaoFrontendListener
         return false;
     }
 
-    /**
-     * Login to phpbb if contao login was successful
-     *
-     * @todo if onImportUser has been run the user is already loggedIn. Maybe we should set a flag in onImportUser or session to skip this
-     *
-     * @param User $user
-     */
-    public function onLogin(User $user)
-    {
-        // Sync login if it's a frontend login attempt, the password is cleary set and
-        // if the original request is not from phpbb already
-        if ($user instanceof FrontendUser && Input::postUnsafeRaw('password')
-            && System::getContainer()->get('request')->attributes->get('isInternalForumRequest', false) === false
-        ) {
-            $result = System::getContainer()->get('phpbb_bridge.connector')->login($user->username,
-                Input::postUnsafeRaw('password'), (bool)Input::post('autologin'));
-
-            if ($result === false) {
-                System::log('Could not login user to phpbb after successfull login to contao: ' . $user->username,
-                    __METHOD__, TL_ACCESS);
-                // @todo Should we then update the password on phpbb side because the user maybe changed the password from contao side
-            }
-        }
-
-    }
-
-    /**
-     * Logout the user the from the forum if logged out from contao
-     *
-     * @param User $user
-     */
-    public function onLogout(User $user)
-    {
-        if ($user instanceof FrontendUser
-            && System::getContainer()->get('request')->attributes->get('isInternalForumRequest', false) === false
-        ) {
-            System::getContainer()->get('phpbb_bridge.connector')->logout();
-        }
-    }
-
-
     public function onReplaceInsertTags($tag) {
         $elements = explode('::', $tag);
 

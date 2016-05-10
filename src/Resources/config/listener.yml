@@ -4,10 +4,3 @@ services:
         class: Ctsmedia\Phpbb\BridgeBundle\EventListener\BypassProxyListener
         tags:
             - { name: kernel.event_listener, event: kernel.request, priority: 10 }
-    phpbb_bridge.listener.sync_session:
-            class: Ctsmedia\Phpbb\BridgeBundle\EventListener\SyncSessionListener
-            calls:
-                - [setContainer, ["@service_container"]]
-                - [setTokenStorage, ["@security.token_storage"]]
-            tags:
-                - { name: kernel.event_listener, event: kernel.response, method: onSyncForumSession }

@@ -107,6 +107,9 @@ class Connector
     /**
      * Ask Contao if it can autologin the current user / session
      * and return the authenticated phpbb user id if found
+     *
+     * THIS IS NOT ONLY for autologin session also for normal sessions
+     * where the user has already logged in to contao but not to phpbb
      * 
      * @throws \InvalidArgumentException
      * @return int phpBB User ID
@@ -114,13 +117,14 @@ class Connector
     public function autologin(){
         $userId = ANONYMOUS;
 
-        // First tests if we found a contao autologin cookie. 
+        // First tests if we found a contao autologin OR a contao auth cookie.
         // otherwise we can stop here
         $cookies = $this->request->variable_names(request_interface::COOKIE);
         $autoLoginCookieFound = false;
         foreach ($cookies as $cookieName) {
-            if(strpos($cookieName, 'FE_AUTO_LOGIN') === 0){
+            if(strpos($cookieName, 'FE_AUTO_LOGIN') === 0 || strpos($cookieName, 'FE_USER_AUTH') === 0){
                 $autoLoginCookieFound = true;
+                continue;
             }
         }
         
@@ -189,8 +193,8 @@ class Connector
             $jsonData = json_decode($response->getContent());
 
             if (isset($jsonData->login_status) && $jsonData->login_status == true) {
-
                 $this->sendCookiesFromResponse($response);
+                return true;
             }
         }
         return false;
@@ -228,7 +232,7 @@ class Connector
     }
 
     /**
-     * Returns the layout sections
+     * Returns the layout sections and refreshes User Session
      *
      * @return array
      */
@@ -249,28 +253,18 @@ class Connector
         // Maybe we get asked to refresh the current site. This can happen if an session is expired and autologin is triggered
         // Wo do this one time
         // @see Contao/FrontendUser::authenticate() => Controller::reaload()
-        if ($response->getStatusCode() == 303
-            && $response->getHeader('Location') == $this->contao_url . '/phpbb_bridge/layout'
-            && $response->getHeader('set-cookie')
-        ) {
-
-            $this->passCookiesThrough($response); // First we put the cookies into the response to the client
-
+        if ($response->getStatusCode() == 303) {
             // we expect a FE_AUTH cookie which will get set for new requests automatically via the cookie listener
             $response = $browser->get($this->contao_url . '/phpbb_bridge/layout', $headers);
-        } else {
-            // refresh cookies to keep contao session alive
-            if($response->getHeader('set-cookie')) {
-                $this->passCookiesThrough($response);
-            }
         }
 
-
+        // Refresh user session data from contao
+        $this->sendCookiesFromResponse($response);
 
         if ($this->isJsonResponse($response)) {
             $sections = $jsonData = json_decode($response->getContent());
+        }
 
-        } 
         return $sections;
     }
 
@@ -294,7 +288,7 @@ class Connector
         $response = $browser->get($this->contao_url . '/phpbb_bridge/ping', $headers);
 
         if ($this->isJsonResponse($response) && $response->getHeader('set-cookie')) {
-            $this->passCookiesThrough($response);
+            $this->sendCookiesFromResponse($response);
             return true;
         }
 
@@ -353,19 +347,6 @@ class Connector
         }
 
         return $this->contaoDb;
-    }
-
-    /**
-     * Passes the cookies from a contao response to the client
-     *
-     * @param Response $response
-     */
-    protected function passCookiesThrough(Response $response) {
-        $delimiter = ' || ';
-        $cookies = explode($delimiter, $response->getHeader('set-cookie', $delimiter));
-        foreach ($cookies as $cookie) {
-            header('Set-Cookie: ' . $cookie, false);
-        }
     }
 
     /**
@@ -454,7 +435,6 @@ class Connector
             //      setcookie($cookie->getName(), $cookie->getValue(), $cookie->getAttribute('expires'), $cookie->getAttribute('path'), $cookie->getAttribute('domain'), $cookie->getAttribute('secure'),$cookie->getAttribute('httponly'));
             // }                  }
         }
-        return true;
     }
 
 }
