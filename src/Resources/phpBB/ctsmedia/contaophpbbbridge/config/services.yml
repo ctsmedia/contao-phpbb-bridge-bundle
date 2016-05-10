@@ -21,6 +21,13 @@ services:
             - {body_class: '%contao.body_class%', forum_pageUrl: '%contao.forum_pageUrl%'}
         tags:
             - { name: event.listener }
+    ctsmedia.contaophpbbbridge.main_listener:
+        class: ctsmedia\contaophpbbbridge\event\MainListener
+        arguments:
+            - @ctsmedia.contaophpbbbridge.connector
+            - {}
+        tags:
+            - { name: event.listener }
     ctsmedia.contaophpbbbridge.controller:
         class: ctsmedia\contaophpbbbridge\controller\Connect
         arguments:
@@ -31,6 +38,7 @@ services:
             - @ctsmedia.contaophpbbbridge.connector
             - %core.root_path%
             - %core.php_ext%
+            - @auth.provider.db
     auth.provider.contao:
         class: ctsmedia\contaophpbbbridge\contao\AuthProvider
         arguments:

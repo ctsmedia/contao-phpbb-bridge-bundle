@@ -41,11 +41,12 @@ class Connect
     protected $contaoConnector;
     protected $rootPath;
     protected $phpExt;
+    protected $db_auth;
 
     protected $debug = false;
     protected $logger = null;
 
-    public function __construct(config $config, ContainerInterface $container, dispatcher $dispatcher, user $user, Connector $contaoConnector, $root_path, $php_ext)
+    public function __construct(config $config, ContainerInterface $container, dispatcher $dispatcher, user $user, Connector $contaoConnector, $root_path, $php_ext, \phpbb\auth\provider\db $db_auth)
     {
         $this->config = $config;
         $this->container = $container;
@@ -54,6 +55,7 @@ class Connect
         $this->contaoConnector = $contaoConnector;
         $this->rootPath = $root_path;
         $this->phpExt = $php_ext;
+        $this->db_auth = $db_auth;
 
         $this->logger = new Logger('bridge_controller');
         $this->logger->pushHandler(new StreamHandler(__DIR__.'/../bridge_error.log'), Logger::ERROR);
@@ -99,6 +101,49 @@ class Connect
 
 
         return $response;
+    }
+
+    public function isValidLogin($username, $password) {
+        $status = false;
+                 
+        // We only allow internal requests from Contao
+        if ($this->container->get('request')->header('X-Requested-With') == 'ContaoPhpbbBridge') {
+
+            //@todo continue here
+            // @todo decrease and increase ausgleich
+            
+            // Get user and decrease login attempt. This one here should not count
+            $username_clean = utf8_clean_string($username);
+            $sql = 'SELECT *
+			FROM ' . USERS_TABLE . "
+			WHERE username_clean = '" . $this->container->get('dbal.conn')->sql_escape($username_clean) . "'";
+            $result = $this->container->get('dbal.conn')->sql_query($sql);
+            $row = $this->container->get('dbal.conn')->sql_fetchrow($result);
+            $this->container->get('dbal.conn')->sql_freeresult($result);
+
+            // test against a db login 
+            $result = $this->db_auth->login($username, $password);
+            if($result['status'] == LOGIN_SUCCESS){
+                $status = true;
+            }
+
+            // Password incorrect - increase login attempts
+            $sql = 'UPDATE ' . USERS_TABLE . '
+			SET user_login_attempts = user_login_attempts + 1
+			WHERE user_id = ' . (int) $row['user_id'] . '
+				AND user_login_attempts < ' . LOGIN_ATTEMPTS_MAX;
+            //$this->db->sql_query($sql);
+
+
+        };
+        
+        $response = new JsonResponse();
+        $response->setData(array(
+            'status' => $status,
+        ));
+        
+        return $response;
+        
     }
 
     /**

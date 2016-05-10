@@ -313,10 +313,10 @@ class Connector
      * ]
      *
      * @param $username string
-     * @return array|null
+     * @return array|bool
      */
     public function getContaoUser($username) {
-        $row = null;
+        $row = false;
 
         if($this->getContaoDbConnection()) {
             $sql = 'SELECT * FROM tl_member WHERE username = '.

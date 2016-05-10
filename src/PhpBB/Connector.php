@@ -15,9 +15,11 @@ use Buzz\Browser;
 use Buzz\Client\Curl;
 use Buzz\Listener\CookieListener;
 use Buzz\Message\RequestInterface;
+use Buzz\Message\Response;
 use Buzz\Util\Cookie;
 use Contao\Encryption;
 use Contao\Environment;
+use Contao\FrontendUser;
 use Contao\Input;
 use Contao\MemberModel;
 use Contao\Message;
@@ -82,13 +84,37 @@ class Connector
     public function getCurrentUser()
     {
         if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
-        // Checks session if user data is already initialized (and not anonym user) or tries to check status (which then set user data to session)
-        if ( (System::getContainer()->get('session')->get('phpbb_user') && System::getContainer()->get('session')->get('phpbb_user')->user_id != 1)
-            || $this->isLoggedIn())
-        {
-            return System::getContainer()->get('session')->get('phpbb_user');
+
+        // unset any session data if the session does not belong to a member
+        if(!FE_USER_LOGGED_IN) {
+            System::getContainer()->get('session')->set('phpbb_user', null);
         }
-        return null;
+
+        // Checks session if user data is already initialized (and not anonym user) or tries to check status (which then set user data to session)
+        if ( FE_USER_LOGGED_IN && System::getContainer()->get('session')->get('phpbb_user', null) === null) {
+            $user = FrontendUser::getInstance();
+
+            // Test if user is member of forum groups. Only throws a warning atm
+            // @todo Make being member of forum group mandatory?
+            $isForumMember = false;
+            foreach($this->getForumMemberGroupIds() as $groupId){
+                if($user->isMemberOf($groupId)) {
+                    $isForumMember = true;
+                    continue;
+                }
+            }
+
+            $phpbbUser = $this->getUser($user->username);
+
+            // Throw warning if a adequate phpbb user was found but the contao member is not member of forum groups
+            if($phpbbUser !== null && $isForumMember === false) {
+                System::log('Warning: Found Forum user but not being member of forum member groups. Maybe reassign or clear', __METHOD__, TL_ERROR);
+            }
+
+            System::getContainer()->get('session')->set('phpbb_user', $phpbbUser);
+
+        }
+        return System::getContainer()->get('session')->get('phpbb_user', null);
 
     }
 
@@ -194,63 +220,6 @@ class Connector
     }
 
     /**
-     * Forces the forum to refresh user session to stay in (expire sync) with contao
-     * Is called via kernel.response event and should only be called once per Master (Frontend) request
-     *
-     * @return bool
-     * @throws \Exception
-     */
-    public function syncForumSession(){
-        if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
-        $browser = $this->initForumRequest();
-        $headers = $this->initForumRequestHeaders();
-
-        // @todo load path from routing.yml
-        $path = '/contao_connect/is_logged_in/refreshSession';
-        $jsonResponse = $browser->get(Environment::get('url') . '/' . $this->getForumPath() . $path, $headers);
-
-        if ($jsonResponse->getHeader('content-type') == 'application/json') {
-            $result = json_decode($jsonResponse->getContent());
-
-            // Parse cookies
-            $cookie_prefix = $this->getDbConfig('cookie_name');
-            $loginCookies = array();
-            foreach ($browser->getListener()->getCookies() as $cookie) {
-                /* @var $cookie Cookie */
-
-                // Stream cookies through to the client
-                System::setCookie($cookie->getName(), $cookie->getValue(), strtotime($cookie->getAttribute('expires')),
-                    $cookie->getAttribute('path'), $cookie->getAttribute('domain'));
-            }
-            return (boolean)$result->logged_in;
-        }
-
-        return false;
-    }
-
-    /**
-     * Logout from phpbb
-     */
-    public function logout()
-    {
-        if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
-        $cookie_prefix = $this->getDbConfig('cookie_name');
-        $sid = Input::cookie($cookie_prefix . '_sid');
-
-        System::getContainer()->get('session')->remove('phpbb_user');
-
-        if ($sid) {
-            $logoutUrl = Environment::get('url') . '/' . $this->getForumPath() . '/ucp.php?mode=logout&sid=' . $sid;
-            $headers = $this->initForumRequestHeaders();
-            $browser = $this->initForumRequest();
-            $browser->get($logoutUrl, $headers);
-        } else {
-            System::log("Invalid try to logout user. No active session found.", __METHOD__, TL_ACCESS);
-        }
-
-    }
-
-    /**
      * Tries to login the User
      *
      * !!Only returns true if the user is not alreay logged in!!
@@ -263,52 +232,28 @@ class Connector
     public function login($username, $password, $autologin = false, $forceToSend = false)
     {
         if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
-        // @todo login againt bridge controller
-        $loginUrl = Environment::get('url') . '/' . $this->getForumPath() . '/ucp.php?mode=login';
-        $formFields = array(
-            'username' => $username,
-            'password' => $password,
-            'viewonline' => 0,
-            'login' => 'Login'
-        );
+        
+        $browser = $this->initForumRequest(true);
+        $headers = $this->initInternalForumRequestHeaders();
 
-        // We've to set this only if we want to autologin. $formFields['autologin'] = false would still activate autologin
-        if($autologin === true) $formFields['autologin'] = "on";
+        $path = sprintf('/contao_connect/is_valid_login/%s/%s', $username, $password);
+        $response = $browser->get($this->getBridgeConfig('url') . '/' . $this->getForumPath() . $path, $headers);
 
-        $headers = $this->initForumRequestHeaders();
-        $browser = $this->initForumRequest($forceToSend);
+        if($this->isJsonResponse($response)) {
+            $jsonData = json_decode($response->getContent());
 
-        // Try to login
-        // @todo maybe better login through our connector?
-        $response = $browser->submit($loginUrl, $formFields, RequestInterface::METHOD_POST, $headers);
-
-
-        // Parse cookies
-        $cookie_prefix = $this->getDbConfig('cookie_name');
-        $loginCookies = array();
-        foreach ($browser->getListener()->getCookies() as $cookie) {
-            /* @var $cookie Cookie */
-
-            // Stream cookies through to the client
-            System::setCookie($cookie->getName(), $cookie->getValue(), strtotime($cookie->getAttribute('expires')),
-                $cookie->getAttribute('path'), $cookie->getAttribute('domain'));
-
-            // Get phpbb cookies
-            if (strpos($cookie->getName(), $cookie_prefix) !== false) {
-                $loginCookies[$cookie->getName()] = $cookie->getValue();
+            if($jsonData->status === true) {
+                System::log('Login Test successfull for ' . $username, __METHOD__, TL_ACCESS);
+            } else {
+                System::log('Login Test failed for ' . $username, __METHOD__, TL_ACCESS);
             }
+
+            return $jsonData->status;
         }
 
+        System::log('Could not get Response for login test for ' . $username. ' || '.$response->getStatusCode().' || '.$response->getContent(), __METHOD__, TL_ERROR);
 
-        // If we find a response cookie with user id and user id higher than 1 (anonym) everything went fine
-        if ($loginCookies[$cookie_prefix . '_u'] > 1) {
-            System::log('Login to phpbb succeeded for ' . $username, __METHOD__, TL_ACCESS);
-            return true;
-        }
-
-        System::log('Login to phpbb failed for ' . $username, __METHOD__, TL_ACCESS);
         return false;
-
     }
 
     /**
@@ -346,10 +291,8 @@ class Connector
             $contaoUser->login = 1;
             $contaoUser->tstamp = $contaoUser->dateAdded = time();
 
-            $objPage = PageModel::findOneByType('phpbb_forum');
-            if($objPage->phpbb_default_groups){
-                $contaoUser->groups = $objPage->phpbb_default_groups;
-            }
+            $contaoUser->groups = $this->getForumMemberGroupIds(true);
+
 
             // @todo add try catch, make it more safe, logout phpbb user on fail?
             $contaoUser->save();
@@ -513,6 +456,23 @@ class Connector
         }
     }
 
+
+    /**
+     * Retrieves the member groups id for Forum members
+     * New members from phpbb get imported to these groups
+     *
+     * @param bool $raw
+     * @return mixed|null
+     */
+    public function getForumMemberGroupIds($raw = false) {
+        $objPage = PageModel::findOneByType('phpbb_forum');
+        if($objPage->phpbb_default_groups){
+            return ($raw === true ) ? $objPage->phpbb_default_groups : deserialize($objPage->phpbb_default_groups);
+        }
+
+        return ($raw === true ) ? null : [];
+    }
+
     /**
      * Compares the current host with phpbb cookie Domain
      * @return bool
@@ -601,6 +561,28 @@ class Connector
         $headers[] = 'X-Requested-With: ContaoPhpbbBridge';
 
         return $headers;
+    }
+
+    /**
+     * Set header for only internal bridge requests
+     * @return array
+     */
+    protected function initInternalForumRequestHeaders()
+    {
+        $headers[] = 'X-Requested-With: ContaoPhpbbBridge';
+
+        return $headers;
+    }
+
+    /**
+     * Checks if we had a successfull response with Json content in it
+     *
+     * @param Response $response
+     * @return bool
+     */
+    protected function isJsonResponse(Response $response)
+    {
+        return $response->getStatusCode() == 200 && $response->getHeader('content-type') == 'application/json';
     }
 
 

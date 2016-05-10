@@ -60,7 +60,7 @@ class ConnectController extends Controller
 
         // Only requests from the bridge itself are allowed. Check if the specific header is set
         if ($req->headers->get('x-requested-with') != 'ContaoPhpbbBridge') {
-            System::log('Not allowed to access phpbb bridge. Seems not coming fron the bridge', __METHOD__, TL_ERROR);
+            System::log('Not allowed to access phpbb bridge. Seems not coming fron the bridge. Path: '.$req->getPathInfo(), __METHOD__, TL_ERROR);
             if(!$this->debug) throw new AccessDeniedException('Not allowed to access phpbb bridge');
         }
         // The bridge also always sets a internal proxy header
