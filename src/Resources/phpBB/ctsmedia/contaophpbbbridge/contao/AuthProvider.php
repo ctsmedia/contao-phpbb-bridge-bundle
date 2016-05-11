@@ -33,6 +33,8 @@ class AuthProvider extends db
 
     protected $contaoConnector;
 
+    protected $logoutInProgress = false;
+
     /**
      * AuthProvider constructor.
      */
@@ -77,25 +79,38 @@ class AuthProvider extends db
      */
     public function autologin() {
 
+        // Don't put anything in here like the ANONYMOUS user id. it can partially break phpbb session generation.
+        // Always needs a complete row
         $user_data = [];
+
+        // phpbb initializes a new session after logout without reload
+        // so the autologin cookies are still in the current request. So just stop here
+        if($this->logoutInProgress === true) {
+            return $user_data;
+        }
 
         //Try to autologin via contao
         try {
             $userId = $this->contaoConnector->autologin();
-        // The exception is thrown if no suitable Contao Cookie is found
-        // so the request can be saved
-        } catch(\InvalidArgumentException $e) {
-            return $user_data;
-        }
 
-        // If found look for the user in phpbb db
-        if($userId > ANONYMOUS){
-            $sql = 'SELECT u.*
+            // If found look for the user in phpbb db
+            if($userId > ANONYMOUS){
+                $sql = 'SELECT u.*
 				FROM ' . USERS_TABLE .' u 
 				WHERE u.user_id = ' . (int) $userId . '
                 AND u.user_type IN (' . USER_NORMAL . ', ' . USER_FOUNDER . ')';
-            $result = $this->db->sql_query($sql);
-            $user_data = $this->db->sql_fetchrow($result);
+                $result = $this->db->sql_query($sql);
+                $user_data = $this->db->sql_fetchrow($result);
+            }
+        // The exception is thrown if no suitable Contao Cookie is found
+        // so the request to contao can be saved
+        } catch(\InvalidArgumentException $e) {}
+
+        // We want to avoid that users can be auto logged in to phpbb via cookies
+        // so we clean the table, because phpbb does not check if it's allowed to autologin the user
+        if(empty($user_data)) {
+            $sql = 'DELETE FROM ' . SESSIONS_KEYS_TABLE;
+            $this->db->sql_query($sql);
         }
 
         return $user_data;
@@ -136,6 +151,7 @@ class AuthProvider extends db
     public function logout($data, $new_session)
     {
         $this->contaoConnector->logout();
+        $this->logoutInProgress = true;
         parent::logout($data, $new_session);
     }
 }

@@ -66,41 +66,16 @@ class Connect
     }
 
     /**
-     * Tests if the current user is logged in
-     * @return Response
+     * Kills existings sessions if a user was found
      */
-    public function isLoggedIn($refreshSession){
-
-        $response = new JsonResponse();
-        $loggedInStatus = ($this->user->data['user_id'] != ANONYMOUS) ? true : false;
-
-        $response->setData(array(
-            'logged_in' => $loggedInStatus,
-            'data' => $this->user->data
-        ));
-
-        // Debug incoming requests
-        if($this->debug){
-            $cookies = $this->container->get('request')->header('cookie');
-            $cookies = explode(";", $cookies);
-            foreach ($cookies as $index => $cookie){
-                if(strpos($cookie, 'phpbb') === false) unset($cookies[$index]);
-            }
-            $cookies = implode("||", $cookies);
-            $url = $this->container->get('request')->server('REQUEST_URI');
-            $this->logger->debug("----------------------------------------------");
-            $this->logger->debug("REQ: ".$url . " || refreshSession: ".((bool)$refreshSession));
-            $this->logger->debug("Cookies: ".$cookies);
-            $this->logger->debug("RES User: ".$this->user->data['user_id']);
+    public function logout() {
+        $status = false;
+        if($this->contaoConnector->isLoggedIn()){
+            $status = $this->user->session_kill(false);
         }
 
-        if($refreshSession != false && $loggedInStatus === true){
-            $session_data = array('session_time' => time());
-            $this->user->update_session($session_data, $this->user->session_id);
-        }
+        return new JsonResponse(['status' => $status]);
 
-
-        return $response;
     }
 
     public function isValidLogin($username, $password) {

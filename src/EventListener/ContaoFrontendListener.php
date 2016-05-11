@@ -62,7 +62,7 @@ class ContaoFrontendListener
                 return true;
             }
 
-            $loginResult = System::getContainer()->get('phpbb_bridge.connector')->login($username, $password);
+            $loginResult = System::getContainer()->get('phpbb_bridge.connector')->validateLogin($username, $password);
             // Only import user if login to forum succeeded
             if ($loginResult === true) {
                 System::log("Trying to import User: ".$username, __METHOD__ ,TL_ACCESS);
@@ -87,7 +87,7 @@ class ContaoFrontendListener
     {
         // Only try to login if it's frontend user
         if ($user instanceof FrontendUser) {
-            $loginResult = System::getContainer()->get('phpbb_bridge.connector')->login($username, $password);
+            $loginResult = System::getContainer()->get('phpbb_bridge.connector')->validateLogin($username, $password);
             // Login was successful on phpbb side. Maybe user changed his password. So do we for contao then
             if ($loginResult === true) {
                 $user->password = Encryption::hash($password);
@@ -96,6 +96,20 @@ class ContaoFrontendListener
             }
         }
         return false;
+    }
+
+    /**
+     * Send Logout signal to phpbb
+     *
+     * @param User $user
+     */
+    public function onLogout(User $user)
+    {
+        if ($user instanceof FrontendUser
+            && System::getContainer()->get('request')->attributes->get('isInternalForumRequest', false) === false
+        ) {
+            System::getContainer()->get('phpbb_bridge.connector')->logout();
+        }
     }
 
     public function onReplaceInsertTags($tag) {

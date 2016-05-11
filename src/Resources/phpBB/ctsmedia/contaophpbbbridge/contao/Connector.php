@@ -41,11 +41,15 @@ class Connector
     protected $contaoDb;
     protected $contaoDbConfig;
 
+    protected $debug = false;
+
     protected $user;
 
     protected $auth;
 
     protected $request;
+
+    protected $cookieAppendix = '';
 
     public function __construct(
         $isBridgeInstalled,
@@ -117,6 +121,8 @@ class Connector
     public function autologin(){
         $userId = ANONYMOUS;
 
+        if($this->debug) $this->logger->debug(__METHOD__);
+
         // First tests if we found a contao autologin OR a contao auth cookie.
         // otherwise we can stop here
         $cookies = $this->request->variable_names(request_interface::COOKIE);
@@ -151,6 +157,15 @@ class Connector
             // We found a logged in user. yay
             if($jsonData->is_logged_in && $jsonData->user_id > ANONYMOUS){
                 $userId = $jsonData->user_id;
+
+                // Append the FE_USER_AUTH Cookie to the current request, so followed request like loadlayout don't have
+                // to run through the autologin / 303 process
+                foreach($browser->getListener()->getCookies() as $cookie) {
+                    if($cookie->getName() == 'FE_USER_AUTH' && !$cookie->isExpired()){
+                        $this->cookieAppendix = '; FE_USER_AUTH='.$cookie->getValue();
+                        continue;
+                    }
+                }
             }
         // Still no json response. nay :/
         } else {
@@ -208,7 +223,6 @@ class Connector
      */
     public function logout()
     {
-
         // The request comes from contao. We can skip here
         if ($this->request->header('X-Requested-With') == 'ContaoPhpbbBridge') {
             return false;
@@ -244,8 +258,10 @@ class Connector
             return $sections;
         };
 
+        if($this->debug) $this->logger->debug(__METHOD__);
+
         $browser = $this->initContaoRequest();
-        $headers = $this->initContaoRequestHeaders();
+        $headers = $this->initContaoRequestHeaders(true);
 
         /* @var $response Response */
         $response = $browser->get($this->contao_url . '/phpbb_bridge/layout', $headers);
@@ -371,7 +387,7 @@ class Connector
      * Parse current request and build forwarding headers
      * @return array
      */
-    protected function initContaoRequestHeaders()
+    protected function initContaoRequestHeaders($allowCookieAppendix = false)
     {
         $headers = array();
         if ($this->request->header('User-Agent')) {
@@ -384,7 +400,7 @@ class Connector
             $headers[] = 'X-Forwarded-For: ' . $this->request->server('REMOTE_ADDR');
         }
         if ($this->request->header('Cookie')) {
-            $headers[] = 'Cookie: ' . $this->request->header('Cookie');
+            $headers[] = 'Cookie: ' . $this->request->header('Cookie') . ( ($allowCookieAppendix) ? $this->cookieAppendix : '');
         }
         if ($this->request->header('Referer')) {
             $headers[] = 'Referer: ' . $this->request->header('Referer');

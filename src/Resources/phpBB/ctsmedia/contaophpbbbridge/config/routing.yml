@@ -1,6 +1,9 @@
 ctsmedia_contaophpbbbridge_controller_is_valid_login:
         path: /contao_connect/is_valid_login/{username}/{password}
         defaults: { _controller: ctsmedia.contaophpbbbridge.controller:isValidLogin }
+ctsmedia_contaophpbbbridge_controller_logout:
+                path: /contao_connect/logout
+                defaults: { _controller: ctsmedia.contaophpbbbridge.controller:logout }
 ctsmedia_contaophpbbbridge_controller_purge_cache:
         path: /contao_connect/purge_cache
         defaults: { _controller: ctsmedia.contaophpbbbridge.controller:purgeCache }

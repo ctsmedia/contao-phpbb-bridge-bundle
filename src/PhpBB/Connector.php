@@ -151,7 +151,7 @@ class Connector
     }
 
     /**
-     * Retrieves User Profile Data by a given userId
+     * Retrieves User Profile Data by a given phpbb userId
      *
      * @param int $userId
      * @return object|null
@@ -175,61 +175,14 @@ class Connector
     }
 
     /**
-     * Check if the current user is logged in and append data to session
+     * Tries to login the User tp phpbb
      *
-     * @todo at token implementation
-     *
-     * @todo Implement caching?
-     * @return bool
-     * @throws \Exception
-     */
-    public function isLoggedIn()
-    {
-        if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
-        // Avoid multiple calls per request
-        if(
-            System::getContainer()->get('request_stack')->getCurrentRequest()->attributes->get('phpbb_loggedin_call_count', 0) > 0
-            && System::getContainer()->get('session')->get('phpbb_user', null) !== null
-        ) {
-            return System::getContainer()->get('session')->get('phpbb_user', null)->user_id != 1 ? true : false;
-        }
-
-        $browser = $this->initForumRequest(true);
-        $headers = $this->initForumRequestHeaders();
-
-        // @todo load path from routing.yml
-        $path = '/contao_connect/is_logged_in';
-        $jsonResponse = $browser->get(Environment::get('url') . '/' . $this->getForumPath() . $path, $headers);
-
-        if ($jsonResponse->getHeader('content-type') == 'application/json') {
-            $result = json_decode($jsonResponse->getContent());
-        } else {
-            System::log("Could not communicate with forum. JSON Response expected. Got: " . $jsonResponse->getHeader('content-type'),
-                __METHOD__, TL_ERROR);
-            throw new \Exception("Could not communicate with forum. JSON Response expected. Got: " . $jsonResponse->getHeader('content-type'));
-        }
-
-
-        System::getContainer()->get('session')->set('phpbb_user', $result->data);
-        // Avoid multiple calls per request
-        $loggedInCallCount = System::getContainer()->get('request_stack')->getCurrentRequest()->attributes->get('phpbb_loggedin_call_count', 0);
-        System::getContainer()->get('request_stack')->getCurrentRequest()->attributes->set('phpbb_loggedin_call_count', $loggedInCallCount + 1);
-
-
-        return (boolean)$result->logged_in;
-    }
-
-    /**
-     * Tries to login the User
-     *
-     * !!Only returns true if the user is not alreay logged in!!
-     * @todo autologin / rememberme sync
      *
      * @param $username string
-     * @param $password string
+     * @param $password string Plain Password
      * @return bool
      */
-    public function login($username, $password, $autologin = false, $forceToSend = false)
+    public function validateLogin($username, $password)
     {
         if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
         
@@ -254,6 +207,36 @@ class Connector
         System::log('Could not get Response for login test for ' . $username. ' || '.$response->getStatusCode().' || '.$response->getContent(), __METHOD__, TL_ERROR);
 
         return false;
+    }
+
+    /**
+     * Logout from phpbb
+     */
+    public function logout()
+    {
+        if($this->debug) System::log("phpbb_bridge: ".__METHOD__, __METHOD__, TL_ACCESS);
+        
+        $cookie_prefix = $this->getDbConfig('cookie_name');
+        $sid = Input::cookie($cookie_prefix . '_sid');
+
+        System::getContainer()->get('session')->remove('phpbb_user');
+
+        if ($sid) {
+            $logoutUrl = Environment::get('url') . '/' . $this->getForumPath() . '/contao_connect/logout';
+            $headers = $this->initForumRequestHeaders();
+            $browser = $this->initForumRequest();
+            $browser->get($logoutUrl, $headers);
+
+            // Parse cookies and send them to the client
+            foreach ($browser->getListener()->getCookies() as $cookie) {
+                /* @var $cookie Cookie */
+
+                // Stream cookies through to the client
+                System::setCookie($cookie->getName(), $cookie->getValue(), strtotime($cookie->getAttribute('expires')),
+                    $cookie->getAttribute('path'), $cookie->getAttribute('domain'));
+            }
+        }
+
     }
 
     /**

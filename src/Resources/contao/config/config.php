@@ -19,6 +19,7 @@ $GLOBALS['TL_HOOKS']['generateFrontendUrl'][] = array('\\Ctsmedia\\Phpbb\\Bridge
 $GLOBALS['TL_HOOKS']['importUser'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoFrontendListener', 'onImportUser');
 $GLOBALS['TL_HOOKS']['checkCredentials'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoFrontendListener', 'onCheckCredentials');
 $GLOBALS['TL_HOOKS']['replaceInsertTags'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoFrontendListener', 'onReplaceInsertTags');
+$GLOBALS['TL_HOOKS']['postLogout'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoFrontendListener', 'onLogout');
 
 
 /**
