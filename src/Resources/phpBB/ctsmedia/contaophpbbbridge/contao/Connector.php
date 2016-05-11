@@ -184,10 +184,14 @@ class Connector
      */
     public function login($username, $password, $autologin = false)
     {
+        $result = [
+            'status' => false,
+            'code'   => ''
+        ];
 
         // The request comes from contao. Maybe from a hook like credentialCheck, importUser so we skip
         if ($this->request->header('X-Requested-With') == 'ContaoPhpbbBridge') {
-            return false;
+            return $result;
         };
 
         // Init request
@@ -207,12 +211,13 @@ class Connector
         if ($this->isJsonResponse($response)) {
             $jsonData = json_decode($response->getContent());
 
-            if (isset($jsonData->login_status) && $jsonData->login_status == true) {
+            if ($jsonData->status == true) {
                 $this->sendCookiesFromResponse($response);
-                return true;
             }
+            $result['status'] = $jsonData->status;
+            $result['code'] = $jsonData->code;
         }
-        return false;
+        return $result;
     }
 
 

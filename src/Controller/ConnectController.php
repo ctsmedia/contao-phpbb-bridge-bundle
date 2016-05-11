@@ -11,6 +11,7 @@
 
 namespace Ctsmedia\Phpbb\BridgeBundle\Controller;
 
+use Contao\Config;
 use Contao\CoreBundle\Exception\AccessDeniedException;
 use Contao\Environment;
 use Contao\FrontendIndex;
@@ -152,22 +153,28 @@ class ConnectController extends Controller
      * Login a user to contao via incoming phpbb POST login request
      *
      * @Route("/login")
-     *
-     * @todo implement security to avoid brute force etc
-     * @todo implement authentication to access API (token, digest, basic...). Maybe not needed since we recheck credentials during login process against phpbb
-     *
      */
     public function loginAction()
     {
         $this->validateRequest();
-        //dump(Config::get('disableIpCheck'));
 
         $user = FrontendUser::getInstance();
         $result = $user->login();
+        $statusCode = 'SUCCESS';
+
+        if($result === false) {
+            $statusCode = 'FAILURE';
+        }
+        
+        // A user was locked so we also need to lock on phpbb side
+        if($result === false && $user->locked > 0 && $user->locked + Config::get('lockPeriod') > time()) {
+            $statusCode = 'LOCKED';
+        }
 
         $response = new JsonResponse();
         $response->setData(array(
-            'login_status' => $result
+            'status' => $result,
+            'code'  => $statusCode
         ));
 
         return $response;

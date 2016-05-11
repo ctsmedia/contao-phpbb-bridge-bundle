@@ -24,4 +24,5 @@ if (empty($lang) || !is_array($lang))
 
 $lang = array_merge($lang, array(
     'CONTAO_LOGIN_FAILED'	=> 'Could not log in to Contao. Please retry or contact support.',
+    'CONTAO_LOGIN_LOCKED'	=> 'Your account was temporary locked. You\'ve to wait some minutes before you can retry. ',
 ));

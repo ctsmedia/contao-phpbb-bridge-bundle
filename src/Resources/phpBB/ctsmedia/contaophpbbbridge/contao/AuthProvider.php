@@ -130,7 +130,16 @@ class AuthProvider extends db
         // We only need to trigger contao login if the phpbb login was successful
         if($result['status'] == LOGIN_SUCCESS){
             $contaoLogin = $this->contaoConnector->login($username, $password, $this->request->is_set_post('autologin'));
-            if($contaoLogin === false) {
+            
+            // Account was locked on contao side
+            if($contaoLogin['status'] === false && $contaoLogin['code'] == 'LOCKED') {
+                $result =  array(
+                    'status'	=> LOGIN_ERROR_EXTERNAL_AUTH,
+                    'error_msg'	=> 'CONTAO_LOGIN_LOCKED',
+                    'user_row'	=> array('user_id' => ANONYMOUS),
+                );
+            // Contao did not want to login the user. See Contao log for more info
+            } elseif($contaoLogin['status'] === false) {
                 $result =  array(
                     'status'	=> LOGIN_ERROR_EXTERNAL_AUTH,
                     'error_msg'	=> 'CONTAO_LOGIN_FAILED',
