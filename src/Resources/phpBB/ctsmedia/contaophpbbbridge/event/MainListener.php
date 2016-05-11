@@ -43,6 +43,7 @@ class MainListener implements EventSubscriberInterface
     {
         return array(
             'core.ucp_profile_reg_details_sql_ary'	=> 'updateContaoProfile',
+            'core.ucp_activate_after'	=> 'resetPassword',
         );
     }
 
@@ -75,6 +76,37 @@ class MainListener implements EventSubscriberInterface
             $this->contaoConnector->getContaoDbConnection()->sql_query($sql);
         }
         
+    }
+
+    /**
+     * Update the contao password if a new one was set via phpbb password forgotten function
+     *
+     * @param data $event
+     */
+    public function resetPassword(data $event) {
+        $data  = $event->get_data();
+        $phpbbuser = $data['user_row'];
+
+
+        // new password was activated, time to update contao
+        if($data['message'] == 'PASSWORD_ACTIVATED'){
+            $user = $this->contaoConnector->getContaoUser($phpbbuser['username']);
+
+            // We set a new password to the contao user, so the old one does not work parallel to the new one
+            // We do not have the plain new password here, so we just set a hash based on the activation key
+            // on next login via contao side the credential check will fail and contao will ask phpbb if the check works there
+            // and if so update the contao password accordingly
+            $updateUser = array('password' => md5($phpbbuser['user_actkey']), 'tstamp' => time());
+
+            if($user !== false && isset($user['id'])) {
+                $sql = 'UPDATE tl_member
+                    SET ' . $this->contaoConnector->getContaoDbConnection()->sql_build_array('UPDATE', $updateUser) . '
+                    WHERE id = ' . $user['id'];
+
+                $this->contaoConnector->getContaoDbConnection()->sql_query($sql);
+            }
+        }
+
     }
 
 
