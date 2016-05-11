@@ -43,7 +43,7 @@ class Connect
     protected $phpExt;
     protected $db_auth;
 
-    protected $debug = true;
+    protected $debug = false;
     protected $logger = null;
 
     public function __construct(config $config, ContainerInterface $container, dispatcher $dispatcher, user $user, Connector $contaoConnector, $root_path, $php_ext, \phpbb\auth\provider\db $db_auth)
