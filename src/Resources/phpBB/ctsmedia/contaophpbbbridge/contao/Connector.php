@@ -149,6 +149,8 @@ class Connector
         // Contao usually triggers a reload on autologin. We've to catch that here
         // Wo do ONE retry. the http lib already merges the Cookies like FE_AUTH from the last response
         if($response->getStatusCode() === 303) {
+            $this->prependAuthCookie($browser);
+            $headers = $this->initContaoRequestHeaders(true);
             $response = $browser->get($this->contao_url . '/phpbb_bridge/autologin', $headers);
         }
 
@@ -157,22 +159,86 @@ class Connector
             // We found a logged in user. yay
             if($jsonData->is_logged_in && $jsonData->user_id > ANONYMOUS){
                 $userId = $jsonData->user_id;
-
-                // Append the FE_USER_AUTH Cookie to the current request, so followed request like loadlayout don't have
-                // to run through the autologin / 303 process
-                foreach($browser->getListener()->getCookies() as $cookie) {
-                    if($cookie->getName() == 'FE_USER_AUTH' && !$cookie->isExpired()){
-                        $this->cookieAppendix = '; FE_USER_AUTH='.$cookie->getValue();
-                        continue;
-                    }
-                }
+                $this->prependAuthCookie($browser);
             }
         // Still no json response. nay :/
         } else {
-            $this->logger->error("Json Response expected. Got: ", array('status' => $response->getStatusCode(), 'content' => $response->getContent()));
+            $this->logger->error("__AUTOLOGIN__---------------------------");
+            $this->logger->error("Json Response expected. Got: ", array('status' => $response->getStatusCode()));
+            $this->logger->error("Set-Cookies: ", array($response->getHeader('Set-Cookie')));
+            $this->logger->error("LOC: ", array($response->getHeader('Location')));
+            $this->logger->error("REQ---------------------------");
+            $this->logger->error("XFF", array( $browser->getLastRequest()->getHeader('X-Forwarded-For')));
+            $this->logger->error("Cookies", array($browser->getLastRequest()->getHeader('Cookie')));
+            $this->logger->error("Ref", array($browser->getLastRequest()->getHeader('Referer')));
         }
 
         return $userId;
+    }
+
+    protected function prependAuthCookie(Browser $browser)
+    {
+        // Append the FE_USER_AUTH Cookie to the current request, so followed request like loadlayout don't have
+        // to run through the autologin / 303 process
+        foreach($browser->getListener()->getCookies() as $cookie) {
+            if($cookie->getName() == 'FE_USER_AUTH' && !$cookie->isExpired()){
+                $this->cookieAppendix = 'FE_USER_AUTH='.$cookie->getValue().'; ';
+            }
+        }
+    }
+
+    /**
+     * Returns the layout sections and refreshes User Session
+     *
+     * @return array
+     */
+    public function loadLayout()
+    {
+        $sections = array();
+        // The request comes from contao. Maybe from a hook like credentialCheck, importUser so we skip
+        if ($this->request->header('X-Requested-With') == 'ContaoPhpbbBridge') {
+            return $sections;
+        };
+
+        if($this->debug) $this->logger->debug(__METHOD__);
+
+        $browser = $this->initContaoRequest();
+        $headers = $this->initContaoRequestHeaders(true);
+
+        /* @var $response Response */
+        $response = $browser->get($this->contao_url . '/phpbb_bridge/layout', $headers);
+
+        // Maybe we get asked to refresh the current site. This can happen if an session is expired and autologin is triggered
+        // Wo do this one time
+        // @see Contao/FrontendUser::authenticate() => Controller::reaload()
+        if ($response->getStatusCode() == 303) {
+
+            $this->prependAuthCookie($browser);
+            $headers = $this->initContaoRequestHeaders(true);
+            $response = $browser->get($this->contao_url . '/phpbb_bridge/layout', $headers);
+        }
+
+        // Refresh user session data from contao
+        $this->sendCookiesFromResponse($response);
+
+        if ($this->isJsonResponse($response)) {
+            $sections = $jsonData = json_decode($response->getContent());
+        } else {
+            $this->logger->error("__LAYOUT__---------------------------");
+            $this->logger->error("Json Response expected. Got: ", array('status' => $response->getStatusCode()));
+            $this->logger->error("Set-Cookies: ", array($response->getHeader('Set-Cookie')));
+            $this->logger->error("LOC: ", array($response->getHeader('Location')));
+            $this->logger->error("REQ---------------------------");
+            $this->logger->error("Inc ath", array( $this->request->server('REQUEST_URI')));
+            $this->logger->error("Path", array( $browser->getLastRequest()->getResource()));
+            $this->logger->error("XFF", array( $browser->getLastRequest()->getHeader('X-Forwarded-For')));
+            $this->logger->error("Cookies", array($browser->getLastRequest()->getHeader('Cookie')));
+            $this->logger->error("Ref", array($browser->getLastRequest()->getHeader('Referer')));
+            $this->logger->error("Append", array($this->cookieAppendix));
+        }
+
+
+        return $sections;
     }
 
     /**
@@ -250,44 +316,7 @@ class Connector
         return false;
     }
 
-    /**
-     * Returns the layout sections and refreshes User Session
-     *
-     * @return array
-     */
-    public function loadLayout()
-    {
-        $sections = array();
-        // The request comes from contao. Maybe from a hook like credentialCheck, importUser so we skip
-        if ($this->request->header('X-Requested-With') == 'ContaoPhpbbBridge') {
-            return $sections;
-        };
 
-        if($this->debug) $this->logger->debug(__METHOD__);
-
-        $browser = $this->initContaoRequest();
-        $headers = $this->initContaoRequestHeaders(true);
-
-        /* @var $response Response */
-        $response = $browser->get($this->contao_url . '/phpbb_bridge/layout', $headers);
-
-        // Maybe we get asked to refresh the current site. This can happen if an session is expired and autologin is triggered
-        // Wo do this one time
-        // @see Contao/FrontendUser::authenticate() => Controller::reaload()
-        if ($response->getStatusCode() == 303) {
-            // we expect a FE_AUTH cookie which will get set for new requests automatically via the cookie listener
-            $response = $browser->get($this->contao_url . '/phpbb_bridge/layout', $headers);
-        }
-
-        // Refresh user session data from contao
-        $this->sendCookiesFromResponse($response);
-
-        if ($this->isJsonResponse($response)) {
-            $sections = $jsonData = json_decode($response->getContent());
-        }
-
-        return $sections;
-    }
 
     /**
      * Sends a ping to contao to keep the session alive
@@ -405,7 +434,7 @@ class Connector
             $headers[] = 'X-Forwarded-For: ' . $this->request->server('REMOTE_ADDR');
         }
         if ($this->request->header('Cookie')) {
-            $headers[] = 'Cookie: ' . $this->request->header('Cookie') . ( ($allowCookieAppendix) ? $this->cookieAppendix : '');
+            $headers[] = 'Cookie: ' . ( ($allowCookieAppendix) ? $this->cookieAppendix : '') . $this->request->header('Cookie');
         }
         if ($this->request->header('Referer')) {
             $headers[] = 'Referer: ' . $this->request->header('Referer');
@@ -446,6 +475,10 @@ class Connector
             foreach ($cookies as $cookie) {
                 header('Set-Cookie: ' . $cookie, false);
             }
+
+//            var_dump($cookies);
+//            var_dump($this->testCookies);
+//            var_dump($response->getHeaders());
 
             // The following won't work because the expire value is not an int and conversion something like
             // 16-Jan-2016 18:07:35 GMT to an int is really unnecessary overhead
