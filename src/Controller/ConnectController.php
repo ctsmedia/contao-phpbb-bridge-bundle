@@ -79,6 +79,8 @@ class ConnectController extends Controller
             if(!$this->debug) throw new AccessDeniedException('Not allowed to access phpbb bridge without proxy header');
         }
 
+        if($this->debug) System::log('Origin Request: '.$req->headers->get('x-requested-origin', '/NotSet'), __METHOD__ , TL_ACCESS);
+
         $req->attributes->set('isInternalForumRequest', true);
         $this->frontendIndex = new FrontendIndex();
 

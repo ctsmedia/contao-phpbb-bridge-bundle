@@ -445,6 +445,9 @@ class Connector
         // because contao hooks trigger requests to phpbb on contao login for example
         $headers[] = 'X-Requested-With: ContaoPhpbbBridge';
 
+        // Send the orginal request path
+        $headers[] = 'X-Requested-Origin: '.$this->request->server('REQUEST_URI');
+
         return $headers;
     }
 
