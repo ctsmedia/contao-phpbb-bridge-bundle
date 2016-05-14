@@ -44,7 +44,7 @@ class Connect
     protected $phpExt;
     protected $db_auth;
 
-    protected $debug = false;
+    protected $debug = true;
     protected $logger = null;
 
     public function __construct(
@@ -66,7 +66,7 @@ class Connect
         $this->phpExt = $php_ext;
         $this->db_auth = $db_auth;
 
-        $this->logger = new Logger('bridge_connector');
+        $this->logger = new Logger('bridge_controller');
         $this->logger->pushHandler(
             new FingersCrossedHandler(new StreamHandler(__DIR__.'/../bridge_error.log'), Logger::ERROR)
         );
@@ -111,6 +111,9 @@ class Connect
 
         // We only allow internal requests from Contao
         if ($this->container->get('request')->header('X-Requested-With') == 'ContaoPhpbbBridge') {
+
+            $username = urldecode($username);
+            $password = urldecode($password);
 
             if ($this->debug) {
                 $this->logger->debug(__METHOD__, array($username, substr($password, 0, 4).'...'));

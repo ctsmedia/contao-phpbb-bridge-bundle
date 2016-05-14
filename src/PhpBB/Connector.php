@@ -189,7 +189,7 @@ class Connector
         $browser = $this->initForumRequest(true);
         $headers = $this->initInternalForumRequestHeaders();
 
-        $path = sprintf('/contao_connect/is_valid_login/%s/%s', $username, $password);
+        $path = sprintf('/contao_connect/is_valid_login/%s/%s', urlencode($username), urlencode($password));
         $response = $browser->get($this->getBridgeConfig('url') . '/' . $this->getForumPath() . $path, $headers);
 
         if($this->isJsonResponse($response)) {
