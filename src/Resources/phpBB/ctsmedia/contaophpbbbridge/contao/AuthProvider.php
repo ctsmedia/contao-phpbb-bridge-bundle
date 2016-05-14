@@ -11,6 +11,9 @@
 
 namespace ctsmedia\contaophpbbbridge\contao;
 
+use Monolog\Handler\FingersCrossedHandler;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use phpbb\auth\provider\db;
 
 
@@ -35,6 +38,8 @@ class AuthProvider extends db
 
     protected $logoutInProgress = false;
 
+    protected $debug = false;
+
     /**
      * AuthProvider constructor.
      */
@@ -42,6 +47,12 @@ class AuthProvider extends db
     {
         parent::__construct($db, $config, $passwords_manager, $request, $user, $phpbb_container, $phpbb_root_path, $php_ext);
         $this->contaoConnector = $contaoConnector;
+
+        $this->logger = new Logger('bridge_auth');
+        $this->logger->pushHandler(
+            new FingersCrossedHandler(new StreamHandler(__DIR__.'/../bridge_error.log'), Logger::ERROR)
+        );
+        $this->logger->pushHandler(new StreamHandler(__DIR__.'/../bridge.log', Logger::DEBUG));
 
     }
 
@@ -59,6 +70,10 @@ class AuthProvider extends db
     public function validate_session($user)
     {
         $hasContaoAuthCookie = $this->request->variable('FE_USER_AUTH', false, true, \phpbb\request\request_interface::COOKIE);
+
+        if ($this->debug) {
+            $this->logger->debug(__METHOD__, ['hasAuthCookie' => $hasContaoAuthCookie, $user['user_id']]);
+        }
 
         // If we are at a anonymous session but find a active contao user auth cookie the user most likely has logged in
         // we should try to log the user in
@@ -83,6 +98,10 @@ class AuthProvider extends db
         // Always needs a complete row
         $user_data = [];
 
+        if ($this->debug) {
+            $this->logger->debug(__METHOD__, ['logoutInProgress' => $this->logoutInProgress]);
+        }
+
         // phpbb initializes a new session after logout without reload
         // so the autologin cookies are still in the current request. So just stop here
         if($this->logoutInProgress === true) {
@@ -102,6 +121,11 @@ class AuthProvider extends db
                 $result = $this->db->sql_query($sql);
                 $user_data = $this->db->sql_fetchrow($result);
             }
+
+            if ($this->debug) {
+                $this->logger->debug('Autologin successfull for ', [$user_data['user_id'], $user_data['username']]);
+            }
+
         // The exception is thrown if no suitable Contao Cookie is found
         // so the request to contao can be saved
         } catch(\InvalidArgumentException $e) {}
@@ -126,6 +150,10 @@ class AuthProvider extends db
     public function login($username, $password)
     {
 
+        if ($this->debug) {
+            $this->logger->debug(__METHOD__, ['user' => $username]);
+        }
+
         $result = parent::login($username, $password);
         // We only need to trigger contao login if the phpbb login was successful
         if($result['status'] == LOGIN_SUCCESS){
@@ -148,6 +176,10 @@ class AuthProvider extends db
             }
         }
 
+        if ($this->debug) {
+            $this->logger->debug('Loginstatus' , [$result['status']]);
+        }
+
         return $result;
     }
 
@@ -159,6 +191,11 @@ class AuthProvider extends db
      */
     public function logout($data, $new_session)
     {
+
+        if ($this->debug) {
+            $this->logger->debug(__METHOD__, ['user_id' => $data['user_id'], 'newSession' => $new_session]);
+        }
+
         $this->contaoConnector->logout();
         $this->logoutInProgress = true;
         parent::logout($data, $new_session);

@@ -29,12 +29,10 @@ class ForumMaintenance extends System
      * Purges the forum caches
      */
     public function purgeForumCache(){
-
         System::getContainer()->get('phpbb_bridge.connector')->generateForumLayoutFiles();
         System::getContainer()->get('phpbb_bridge.connector')->clearForumCache();
 
         $this->log('Purged the phpbb forum cache', __METHOD__, TL_CRON);
-
     }
 
     /**
