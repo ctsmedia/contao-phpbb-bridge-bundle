@@ -70,9 +70,10 @@ class AuthProvider extends db
     public function validate_session($user)
     {
         $hasContaoAuthCookie = $this->request->variable('FE_USER_AUTH', false, true, \phpbb\request\request_interface::COOKIE);
+        $hasContaoAutologinCookie = $this->request->variable('FE_AUTO_LOGIN', false, true, \phpbb\request\request_interface::COOKIE);
 
         if ($this->debug) {
-            $this->logger->debug(__METHOD__, ['hasAuthCookie' => $hasContaoAuthCookie, $user['user_id']]);
+            $this->logger->debug(__METHOD__, ['hasAuthCookie' => $hasContaoAuthCookie,'hasAutologinCookie' => $hasContaoAutologinCookie ,  $user['user_id']]);
         }
 
         // If we are at a anonymous session but find a active contao user auth cookie the user most likely has logged in
@@ -83,6 +84,14 @@ class AuthProvider extends db
 
         // A logout must has happened somewhere.
         if($user['user_id'] > ANONYMOUS && !$hasContaoAuthCookie) {
+            return false;
+        }
+
+        // One last check. If we have a autologin cookie and the phpuserid is anonymous but the phpbb session is still active
+        // (otherwise we would not be in here) then we mark the session expired. This should only be the case if s1 logs
+        // in with autologin enabled and deletes the FE_AUTH cookie on purpose. In other cases the the phpbb session and
+        // contao auth end at the same time.
+        if($user['user_id'] == ANONYMOUS && $hasContaoAutologinCookie) {
             return false;
         }
     }
