@@ -2,7 +2,7 @@
 /*
  * This file is part of contao-phpbb-bridge-bundle
  * 
- * Copyright (c) CTS GmbH
+ * Copyright (c) 2015-2016 Daniel Schwiperich
  * 
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -17,9 +17,10 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 
 /**
- * Class MainListener
+ * Listener for the main phpbb Events to trigger Contao related actions
+ *
  * @package ctsmedia\contaophpbbbridge\event
- * @author Daniel Schwiperich <d.schwiperich@cts-media.eu>
+ * @author Daniel Schwiperich <https://github.com/DanielSchwiperich>
  */
 class MainListener implements EventSubscriberInterface
 {

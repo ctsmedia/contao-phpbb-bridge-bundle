@@ -2,7 +2,7 @@
 /*
  * This file is part of contao-phpbbBridge
  * 
- * Copyright (c) CTS GmbH
+ * Copyright (c) 2015-2016 Daniel Schwiperich
  * 
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -26,11 +26,12 @@ use Symfony\Component\Security\Acl\Exception\Exception;
 
 
 /**
+ * Controller / API Endpoint for incoming requests from contao
  *
  * @todo security: make this only accessible for contao requests.
  *
  * @package ctsmedia\contaophpbbbridge\controller
- * @author Daniel Schwiperich <d.schwiperich@cts-media.eu>
+ * @author Daniel Schwiperich <https://github.com/DanielSchwiperich>
  * @Route("/contao_connect")
  */
 class Connect

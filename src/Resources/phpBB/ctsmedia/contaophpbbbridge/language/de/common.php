@@ -2,7 +2,7 @@
 /*
  * This file is part of contao-phpbb-bridge-bundle
  * 
- * Copyright (c) CTS GmbH
+ * Copyright (c) 2015-2016 Daniel Schwiperich
  * 
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.

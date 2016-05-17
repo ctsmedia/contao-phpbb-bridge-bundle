@@ -2,7 +2,7 @@
 /*
  * This file is part of contao-phpbbBridge
  * 
- * Copyright (c) CTS GmbH
+ * Copyright (c) 2015-2016 Daniel Schwiperich
  * 
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -20,16 +20,12 @@ use phpbb\auth\provider\db;
 /**
  * Contao Auth provider
  *
- * Only extends the default db authentication plugin so we can hook into the login, logout, ... processes
- * because there exists for some of those no default events.
- * Feels also cleaner
+ * Syncs phpbb authentication to contao. While contao is the provider / responsible
+ * Extends the default phpbb authenticator for local checks
  *
- * The provider just uses default func and additionally sends the auth data to contao via the connector
- *
- * @see
  *
  * @package ctsmedia\contaophpbbbridge\contao
- * @author Daniel Schwiperich <d.schwiperich@cts-media.eu>
+ * @author Daniel Schwiperich <https://github.com/DanielSchwiperich>
  */
 class AuthProvider extends db
 {

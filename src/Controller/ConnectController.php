@@ -2,7 +2,7 @@
 /*
  * This file is part of contao-phpbbBridge
  * 
- * Copyright (c) CTS GmbH
+ * Copyright (c) 2015-2016 Daniel Schwiperich
  * 
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -28,9 +28,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 
 /**
+ * Controller for Bridge requests from phpbb side
  *
  * @package Ctsmedia\Phpbb\BridgeBundle\Controller
- * @author Daniel Schwiperich <d.schwiperich@cts-media.eu>
+ * @author Daniel Schwiperich <https://github.com/DanielSchwiperich>
  *
  * @Route("/phpbb_bridge", defaults={"_scope" = "frontend"})
  */
