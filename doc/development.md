@@ -39,13 +39,19 @@ So what this does is, it starts the container and mounts your current directory 
 (more exactly just overlaying) the original bridge src which where loaded from packagist defined by the version number in the Dockerfile 
 
 3. The Container is now running. Access it via IP: `http://containerip/install.php`
-or via the host entry: `http://phpbbbridge.contao.local/install.php` and follow the install setup described in the [installation guide](installation.md)
-You've 
+or via the host entry: `http://phpbbbridge.contao.local/install.php` and install contao. See addition info below DB Settings.
+
+4. Install phpbb via `http://containerip/phpbb/install/index.php` or `http://phpbbbridge.contao.local/phpbb/install/index.php`. 
+You need (re)move the install dir after installation.
+Run `docker exec phpbb_bridge mv /var/www/share/phpbbbridge.contao.local/contao/web/phpbb/install /var/www/share/phpbbbridge.contao.local/contao/web/phpbb/install123`
+
+5. Now follow the [installation guide](installation.md) for setting up the bridge. You've at least to setup a website root and layout in Contao.
 
 Additional Info: 
-- You can use mysql root user with no password. There are two dbs created already: `contao` and `phpbb`. You can either one db for both or seperate them.
-The path to phpbb is /var/www/share/${DOCKER_DOMAIN}/phpbb where ${DOCKER_DOMAIN} is set to whatever you've set in the Dockerfile. 
-By default it is: /var/www/share/phpbbbridge.contao.local/phpbb
+- You can use mysql **root** user with **no password**. There are two dbs created already: `contao` and `phpbb`. You can use either one db for both or seperate them. 
+We recommend to use the same db for the docker container. Otherwise you've to do a separate, manuel setup step in the paramters.yml for contao.  
+- The path to phpbb is /var/www/share/${DOCKER_DOMAIN}/contao/web/phpbb where ${DOCKER_DOMAIN} is set to whatever you've set in the Dockerfile. 
+By default it is: `/var/www/share/phpbbbridge.contao.local/contao/web/phpbb`
 - You may want to change your dir permission settings so the brigde can create some needed files. They get automatically ignored via .gitignore. Just run
 `find . -type d -exec chmod 0777 {} \;` so the bridge is able to write those files. This is only needed if you mount the git repos into the container. 
 

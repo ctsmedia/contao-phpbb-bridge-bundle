@@ -14,14 +14,16 @@ RUN composer create-project --prefer-dist --no-dev --no-scripts --no-interaction
 RUN composer --working-dir=/var/www/share/${DOCKER_DOMAIN}/contao --no-update \
         require ctsmedia/contao-phpbb-bridge-bundle ${BRIDGE_COMPOSER_VERSION} \
     && composer --working-dir=/var/www/share/${DOCKER_DOMAIN}/contao --no-scripts --prefer-dist --no-dev \
-        update ctsmedia/contao-phpbb-bridge-bundle
+        update ctsmedia/contao-phpbb-bridge-bundle \
+    && chmod -R 777 /var/www/share/${DOCKER_DOMAIN}/contao/vendor/ctsmedia
 # Setting Document Root
 RUN cd /var/www/share/${DOCKER_DOMAIN}/ \
     && ln -s ./contao/web /var/www/share/${DOCKER_DOMAIN}/htdocs
 # Preparing phpbb
 RUN curl -L https://www.phpbb.com/files/release/phpBB-${PHPBB_VERSION}.zip -o phpbb.zip \
     && unzip phpbb.zip \
-    && mv phpBB3 /var/www/share/${DOCKER_DOMAIN}/contao/web/phpbb
+    && mv phpBB3 /var/www/share/${DOCKER_DOMAIN}/contao/web/phpbb \
+    && chmod -R 777 /var/www/share/${DOCKER_DOMAIN}/contao/web/phpbb
 
 
 
