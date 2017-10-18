@@ -4,7 +4,7 @@
 
 ### Prerequisites
 
-You need to have a contao 4.X and phpbb 3.1 installation. phpbb can be put below or beside / above contao
+You need to have a contao 4.X and phpbb  >= 3.1 installation. phpbb can be put below or beside / above contao
   
 For example:  
 ```
@@ -28,10 +28,11 @@ or:
 1. Add the bridge as dependency in your contao installation:
 `composer require ctsmedia/contao-phpbb-bridge-bundle`
 
-2. Modify the **AppKernel.php** and add the following to the registerBundles Method:
-    `new Ctsmedia\\Phpbb\\BridgeBundle\\CtsmediaPhpbbBridgeBundle(),`
-
-    For Example:  
+2. For managed edition you can skip this step:  
+   Modify the **AppKernel.php** and add the following to the registerBundles Method:  
+    `new Ctsmedia\\Phpbb\\BridgeBundle\\CtsmediaPhpbbBridgeBundle(),`  
+    
+    For Example:    
     ```php
     public function registerBundles()
       {
@@ -56,7 +57,7 @@ or:
             resource: "@CtsmediaPhpbbBridgeBundle/Resources/config/routing.yml" 
     ```
     
-2.1 If you've installed phpbb into another db the module needs to know about it. See the [configuration section](#phpbb-config)
+  2.1 If you've installed phpbb into another db the module needs to know about it. See the [configuration section](#phpbb-config)
 
 3. Go to module subfolder `contaoroot/vendor/ctsmedia/contao-phpbb-bridge-bundle/src/Resources/phpBB/ctsmedia/contaophpbbbridge` and run `composer install`
 This will install a needed http library to communicate with contao. phpbb is currently not able to install module dependencies by itself. 
