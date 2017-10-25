@@ -15,72 +15,21 @@ We provide a set of development tools if you like to contribute or modify the br
 
 This bundle comes with a pre configured docker container which gives you a working development 
 environment within minutes.
-You get a: 
- - full equiped LAMP Server 
- - contao/standard-edition
- - already enabled bridge modul
- - phpbb
- - phpmyadmin
 
-1. Build the container: `docker build -t phpbb_bridge:latest .`
+1. Run `docker-compose up -d` from the main directory
+2. Run `docker exec contao_phpbb_bridge_php bash -c "php ../install-demo.php"`. You now have a contao managed installation with official demo content running at http://localhost/
+3. Go to http://localhost/phpbb and install the forum. Use following settings for db setup: 
 
-2. Running the Container: 
-
-2.1 If you just want to run and test the container
-`docker run -d --name phpbb_bridge ctsmedia/phpbb_bridge:latest /sbin/my_init --enable-insecure-key`
-2.2 If you want do develop on the bridge mount the src folder appropriate:
-```
-docker run -d \
-    -v $(pwd):/var/www/share/phpbbbridge.contao.local/contao/vendor/ctsmedia/contao-phpbb-bridge-bundle \
-    --name phpbb_bridge ctsmedia/phpbb_bridge:latest \
-    /sbin/my_init --enable-insecure-key
-```
-So what this does is, it starts the container and mounts your current directory (the bridge repos) into the vendor folder of contao, overwriting
-(more exactly just overlaying) the original bridge src which where loaded from packagist defined by the version number in the Dockerfile 
-
-3. The Container is now running. Access it via IP: `http://containerip/install.php`
-or via the host entry: `http://phpbbbridge.contao.local/install.php` and install contao. See addition info below DB Settings.
-
-4. Install phpbb via `http://containerip/phpbb/install/index.php` or `http://phpbbbridge.contao.local/phpbb/install/index.php`. 
-You need (re)move the install dir after installation.
-Run `docker exec phpbb_bridge mv /var/www/share/phpbbbridge.contao.local/contao/web/phpbb/install /var/www/share/phpbbbridge.contao.local/contao/web/phpbb/install123`
+    ```
+    Host: db
+    Db name: contao
+    Db User: root
+    DB Pass: contaodocker
+    ```
+    If you install a 3.1.x version you may get an error at the final stage. ignore it. 
+ 
+4. You need (re)move the install dir after installation.  
+Run `docker exec contao_phpbb_bridge_php mv /var/www/share/project/web/phpbb/install /var/www/share/project/web/phpbb/install123`  
+You can access your phpbb installation now at http://localhost/phpbb/
 
 5. Now follow the [installation guide](installation.md) for setting up the bridge. You've at least to setup a website root and layout in Contao.
-
-Additional Info: 
-- You can use mysql **root** user with **no password**. There are two dbs created already: `contao` and `phpbb`. You can use either one db for both or seperate them. 
-We recommend to use the same db for the docker container. Otherwise you've to do a separate, manuel setup step in the paramters.yml for contao.  
-- The path to phpbb is /var/www/share/${DOCKER_DOMAIN}/contao/web/phpbb where ${DOCKER_DOMAIN} is set to whatever you've set in the Dockerfile. 
-By default it is: `/var/www/share/phpbbbridge.contao.local/contao/web/phpbb`
-- You may want to change your dir permission settings so the brigde can create some needed files. They get automatically ignored via .gitignore. Just run
-`find . -type d -exec chmod 0777 {} \;` so the bridge is able to write those files. This is only needed if you mount the git repos into the container. 
-
-
-#### Access your container
-We've ssh enabled for access. But you can also login via docker easily using:
-  
-  `docker exec -it phpbb_bridge bash`
-  
-For ssh access you can add your own key or use the default key which is already enabled.  
-For development purpose using the *insecure* is perfectly fine as long as the container runs on you own machine.
-
-Download the key and put it where you like (right here or at ~/.ssh/)  
-```
-curl -o insecure_key -fSL https://github.com/phusion/baseimage-docker/raw/master/image/services/sshd/keys/insecure_key
-chmod 600 insecure_key
-```  
-Create a local gulp config (is ignored by git)  
-```
-touch gulp.config.js
-echo "docker.sftp.key='PATH_TO_KEY/insecure_key';" >> gulp.config.js 
-```  
-
-#### Starting your Container
-
-The gulp task can start your container if stopped and modify your /etc/hosts if it's writable so you can access the container not 
-only via ip (which is shown on docker run or if you connect).
-It's easy as it gets. Just run the gulp task: `docker:init`
-
-#### gulp
-To use gulp you need to have node installed. If so, just call `npm install` and all dependencies will be loaded.
-You then can run `gulp docker:watch`
