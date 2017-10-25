@@ -1,7 +1,7 @@
 # Contao-phpbbBridge Bundle ![logo_c2bb-36](https://cloud.githubusercontent.com/assets/14332656/14010600/eee4b534-f196-11e5-8cc4-a2c9146698c3.png)
 ## A bridge for integrating phpbb with a contao website / portal 
 
-The contao-phpbbBridge Bundle connects your **Contao 4** CMS with a **phpbb 3.1** Forum and provides a tight, seamless integration between those systems.
+The contao-phpbbBridge Bundle connects your **Contao 4** CMS with a **phpbb 3.1 or 3.2** Forum and provides a tight, seamless integration between those systems.
 It allows you to create portals, communities, intranet solutions without the usual problems of having either a bad cms integration in forum software or on the other side when using a cms the hassle with bad,insufficient forum modules. 
 Just use the best systems of both worlds. 
 

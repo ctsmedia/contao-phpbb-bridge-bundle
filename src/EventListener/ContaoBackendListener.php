@@ -23,12 +23,12 @@ class ContaoBackendListener
 
     public function onGetPageStatusIcon($objPage, $image)
     {
-
         if ($objPage->type == 'phpbb_forum') {
-            if ($image == "phpbb_forum.gif") {
+
+            if (strpos($image, 'phpbb_forum.') !== false) {
                 $image = '/bundles/ctsmediaphpbbbridge/phpbb_forum-icon.png';
             }
-            if ($image == "phpbb_forum_1.gif") {
+            if (strpos($image, 'phpbb_forum_1.') !== false) {
                 $image = '/bundles/ctsmediaphpbbbridge/phpbb_forum-icon_1.png';
             }
 

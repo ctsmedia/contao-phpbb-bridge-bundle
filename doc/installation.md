@@ -25,6 +25,15 @@ or:
 
 ### Install Bridge
 
+#### Managed Edition with Contao Manager
+
+1. Access the Contao Manager
+2. Search for the phpbb bridge and install it
+3. Run the contao install tool and update db
+4. Continue with Step 5 of the Standard Edition install process
+
+#### Standard Edition
+
 1. Add the bridge as dependency in your contao installation:
 `composer require ctsmedia/contao-phpbb-bridge-bundle`
 
@@ -62,16 +71,18 @@ or:
 3. Go to module subfolder `contaoroot/vendor/ctsmedia/contao-phpbb-bridge-bundle/src/Resources/phpBB/ctsmedia/contaophpbbbridge` and run `composer install`
 This will install a needed http library to communicate with contao. phpbb is currently not able to install module dependencies by itself. 
 In release versions we will pre compile the dependencies for phpbb 
+
+4. Run the contao install tool and update db
     
-4. Login to the Contao Backend and create a Page of type 'PhpBB Forum Page' and configure it appropriate. You'll get some log messages of something fails / succeeds.
+5. Login to the Contao Backend and create a Page of type 'PhpBB Forum Page' and configure it appropriate. You'll get some log messages of something fails / succeeds.
 Important is the alias and path to the forum. The Bridge module will create a symlink to it so you can access the forum right on. 
 
     4.1 Go to the settings section and save once. The session expire and autologin time now get synced. You should get 2 confirmation messages. Always change those values from the contao side. 
 
-5. Once Contao has made the link to forum login to the admin panel of phpbb and activate the contao extension under `Customize -> Manage Extensions`
+6. Once Contao has made the link to forum login to the admin panel of phpbb and activate the contao extension under `Customize -> Manage Extensions`
 If the module doesn't appear, purge the cache (`General -> Find 'Purge the cache' and click Run now`)
 
-6. At this moment the bridge is already capable of synching your countao frontend login with phpbb. To sync also the logins made via the phpbb forums you've to enable the bridge auth provider.
+7. At this moment the bridge is already capable of synching your countao frontend login with phpbb. To sync also the logins made via the phpbb forums you've to enable the bridge auth provider.
 Goto `General -> Authentication` in the Adminpanel and choose *Contao* in the select feld. 
 If this entry doesn't appear yet, purge the cache (`General -> Find 'Purge the cache' and click Run now`)
 

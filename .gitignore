@@ -5,6 +5,7 @@ nbproject/
 #### Composer
 /vendor/
 /src/Resources/phpBB/ctsmedia/contaophpbbbridge/vendor/
+composer.lock
 
 #### bridge generated files
 src/Resources/phpBB/ctsmedia/contaophpbbbridge/config/contao.yml
@@ -12,6 +13,4 @@ src/Resources/phpBB/ctsmedia/contaophpbbbridge/styles/all/template/*.html
 src/Resources/phpBB/ctsmedia/contaophpbbbridge/styles/all/template/event/*.html
 
 #### Other
-gulp.config.js
-node_modules
-insecure_key
+

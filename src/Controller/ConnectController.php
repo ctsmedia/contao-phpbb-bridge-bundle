@@ -73,7 +73,7 @@ class ConnectController extends Controller
 
         // Make sure we have an internat request
         // we cannot use $req->server->get('REMOTE_ADDR') here, because symfone alters it
-        if($_SERVER['REMOTE_ADDR'] != Environment::get('server') ){
+        if($_SERVER['REMOTE_ADDR'] != Environment::get('server')  && !System::getContainer()->getParameter('phpbb_bridge.allow_external_ip_access')){
             System::log('IPs did not match. clientIP: '.
                 $req->getClientIp().'| EnvClientIp '.Environment::get('ip').'| EnvServerIp '.Environment::get('server'),
             __METHOD__, TL_ERROR);
