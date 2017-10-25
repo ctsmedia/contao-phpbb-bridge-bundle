@@ -42,6 +42,9 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('dir')
                     ->defaultValue('phpBB3')
                 ->end()
+                ->booleanNode('allow_external_ip_access')
+                    ->defaultFalse()
+                ->end()
             ->end()
         ;
 

@@ -29,7 +29,13 @@ services:
       - "9000"
     volumes:
       - /var/www/share/project
-      - .:/var/www/share/project/vendor/ctsmedia/contao-phpbb-bridge-bundle:ro
+
+      #This is what you want in general. You local source directly mounted into the vendor folder
+      - .:/var/www/share/project/vendor/ctsmedia/contao-phpbb-bridge-bundle
+
+      # Use this if you need composer related changes (like extra section to be reloaded)
+      # then remove in container the dep and set it new with a path repos set
+      #- .:/var/www/share/contao-phpbb-bridge-bundle
   db:
     image: mariadb:10.1
     container_name: contao_phpbb_bridge_db

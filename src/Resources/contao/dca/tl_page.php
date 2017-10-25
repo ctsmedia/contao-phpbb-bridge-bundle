@@ -46,7 +46,7 @@ $GLOBALS['TL_DCA']['tl_page']['fields']['phpbb_default_groups'] = array
     'filter'                  => true,
     'inputType'               => 'checkboxWizard',
     'foreignKey'              => 'tl_member_group.name',
-    'eval'                    => array('multiple'=>true, 'feEditable'=>true, 'feGroup'=>'login'),
+    'eval'                    => array('multiple'=>true, 'feEditable'=>true, 'feGroup'=>'login', 'tl_class' => 'clr'),
     'sql'                     => "blob NULL",
     'relation'                => array('type'=>'belongsToMany', 'load'=>'lazy')
 );

@@ -37,6 +37,7 @@ class CtsmediaPhpbbBridgeExtension extends ConfigurableExtension
 
         $container->setParameter('phpbb_bridge.dir', $mergedConfig['dir']);
         $container->setParameter('phpbb_bridge.db.table_prefix', $mergedConfig['db']['table_prefix']);
+        $container->setParameter('phpbb_bridge.allow_external_ip_access', $mergedConfig['allow_external_ip_access']);
     }
 
 

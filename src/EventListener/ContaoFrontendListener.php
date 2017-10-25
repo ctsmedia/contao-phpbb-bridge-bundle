@@ -107,7 +107,7 @@ class ContaoFrontendListener
     public function onLogout(User $user)
     {
         if ($user instanceof FrontendUser
-            && System::getContainer()->get('request')->attributes->get('isInternalForumRequest', false) === false
+            && System::getContainer()->get('request_stack')->getCurrentRequest()->attributes->get('isInternalForumRequest', false) === false
         ) {
             System::getContainer()->get('phpbb_bridge.connector')->logout();
         }
