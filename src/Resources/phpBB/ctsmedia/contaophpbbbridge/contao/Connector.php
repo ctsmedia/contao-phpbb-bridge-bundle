@@ -22,7 +22,9 @@ use Monolog\Handler\FingersCrossedHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use phpbb\auth\auth;
+use phpbb\db\driver\driver_interface;
 use phpbb\db\driver\mysql;
+use phpbb\db\driver\mysqli;
 use phpbb\request\request;
 use phpbb\request\request_interface;
 use phpbb\user;
@@ -50,6 +52,11 @@ class Connector
     protected $auth;
 
     protected $request;
+    
+    protected $db;
+
+    protected $phpBBRootPath;
+    protected $phpExt;
 
     protected $cookieAppendix = '';
 
@@ -60,7 +67,10 @@ class Connector
         $contaoDbConfig,
         user $user,
         auth $auth,
-        request $request
+        request $request, 
+        driver_interface $db,
+        $phpBBRootPath,
+        $phpExt = 'php'
     ) {
         $this->isBridgeInstalled = (bool)$isBridgeInstalled;
         $this->forum_pageId = $forum_pageId;
@@ -68,6 +78,9 @@ class Connector
         $this->user = $user;
         $this->auth = $auth;
         $this->request = $request;
+        $this->db = $db;
+        $this->phpBBRootPath = $phpBBRootPath;
+        $this->phpExt = $phpExt;
 
         $this->contaoDbConfig = $contaoDbConfig;
         $this->contaoDb = null;
@@ -171,6 +184,12 @@ class Connector
                 $userId = $jsonData->user_id;
                 $this->prependAuthCookie($browser);
             }
+            elseif ($jsonData->is_logged_in && $jsonData->user_id == 0 && strlen($jsonData->username) > 0) {
+                // A user which already exists in contao and needs to be imported now
+                $userId = $this->importUser($jsonData->username);
+                $this->prependAuthCookie($browser);
+            }
+
             // Still no json response. nay :/
         } else {
             $this->logger->error("__AUTOLOGIN__---------------------------");
@@ -182,6 +201,37 @@ class Connector
         }
 
         return $userId;
+    }
+
+    /**
+     * Imports a user from contao to phpbb and return the new user id
+     *
+     * @param string $contaoUsername
+     * @return int userID
+     */
+    public function importUser($contaoUsername)
+    {
+        $contaoUserRow = $this->getContaoUser($contaoUsername);
+
+        // we are going to use the user_add function so include functions_user.php if it wasn't defined yet
+        if (!function_exists('user_add'))
+        {
+            include($this->phpBBRootPath . 'includes/functions_user.' . $this->phpExt);
+        }
+
+        $userRow = [
+            'username' => $contaoUserRow['username'],
+            'user_password'=> $contaoUserRow['password'], // this is the encrypted contao password. So login will not work with this one
+            'user_email' => $contaoUserRow['email'],
+            'group_id' => $this->getGroupIdForRegistration(),
+            'user_type' => USER_NORMAL,
+        ];
+
+
+        $userId = user_add($userRow);
+
+        return $userId !== false ? $userId : ANONYMOUS;
+
     }
 
     /**
@@ -404,7 +454,7 @@ class Connector
     public function getContaoDbConnection()
     {
         if ($this->contaoDb === null) {
-            $this->contaoDb = new mysql();
+            $this->contaoDb = new mysqli();
             $this->contaoDb->sql_connect(
                 $this->contaoDbConfig['host'],
                 $this->contaoDbConfig['user'],
@@ -529,6 +579,22 @@ class Connector
             //      setcookie($cookie->getName(), $cookie->getValue(), $cookie->getAttribute('expires'), $cookie->getAttribute('path'), $cookie->getAttribute('domain'), $cookie->getAttribute('secure'),$cookie->getAttribute('httponly'));
             // }                  }
         }
+    }
+
+    /**
+     * Retrieve phpbb group id for registered users
+     *
+     * @return int group id
+     */
+    protected function getGroupIdForRegistration()
+    {
+        $sql = 'SELECT group_id
+        FROM ' . GROUPS_TABLE . "
+        WHERE group_name = '" . $this->db->sql_escape('REGISTERED') . "'
+            AND group_type = " . GROUP_SPECIAL;
+        $result = $this->db->sql_query($sql);
+        $row = $this->db->sql_fetchrow($result);
+        return $row['group_id'];
     }
 
 }

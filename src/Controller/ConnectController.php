@@ -96,6 +96,7 @@ class ConnectController extends Controller
 
         $isLoggedIn = false;
         $userId     = 0;
+        $username   = '';
         
         if(FE_USER_LOGGED_IN === true) {
             $username = $this->container->get('security.token_storage')->getToken()->getUsername();
@@ -105,14 +106,16 @@ class ConnectController extends Controller
                 $isLoggedIn = true;
                 $userId     = $phpBBuser->user_id;
             } else {
-                System::log('Request from phpbb to autologin a user which was found in Contao but not in phpbb: '.$username, __METHOD__, TL_ERROR);
+                System::log('Request from phpbb to autologin a user which was found in Contao but not in phpbb: ' . $username, __METHOD__, TL_ERROR);
+                $isLoggedIn = true;
             }
         }
 
         $response = new JsonResponse();
         $response->setData(array(
             'is_logged_in' => $isLoggedIn,
-            'user_id'      => (int)$userId
+            'user_id'      => (int)$userId,
+            'username'     => $username,
         ));
 
         return $response;
@@ -168,7 +171,7 @@ class ConnectController extends Controller
         if($result === false) {
             $statusCode = 'FAILURE';
         }
-        
+
         // A user was locked so we also need to lock on phpbb side
         if($result === false && $user->locked > 0 && $user->locked + Config::get('lockPeriod') > time()) {
             $statusCode = 'LOCKED';
