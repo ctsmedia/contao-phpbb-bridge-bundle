@@ -32,7 +32,9 @@ environment within minutes.
 Run `docker exec contao_phpbb_bridge_php mv /var/www/share/project/web/phpbb/install /var/www/share/project/web/phpbb/install123`  
 You can access your phpbb installation now at http://localhost/phpbb/
 
-5. Now follow the [installation guide](installation.md) for setting up the bridge. Continue / Start at step 5.  
+5. If you have mounted the local source folder in the docker container (default) then run `composer install --ignore-platform-reqs --no-scripts -d src/Resources/phpBB/ctsmedia/contao-phpbb-bridge-bundle/src/Resources/phpBB/ctsmedia/contaophpbbbridge`
+
+6. Now follow the [installation guide](installation.md) for setting up the bridge. Continue / Start at step 5.  
 You've at least to setup a website root and layout in Contao. Remember the admin user for contao is the one from the demo installation: k.jones
 
 **Info:** You should not use localhost as domain, as this leads to problems that the php fpm container tries to connect to itself instead of the web container. 

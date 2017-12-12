@@ -44,3 +44,10 @@ services:
       MYSQL_DATABASE: *project
       MYSQL_USER: *project
       MYSQL_PASSWORD: *project
+
+  phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        depends_on:
+          - db
+        ports:
+         - "8080:80"
