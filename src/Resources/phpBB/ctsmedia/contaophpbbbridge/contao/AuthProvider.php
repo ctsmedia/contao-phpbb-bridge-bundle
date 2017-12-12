@@ -107,6 +107,14 @@ class AuthProvider extends db
             $this->logger->debug(__METHOD__, ['logoutInProgress' => $this->logoutInProgress]);
         }
 
+        // In admin area we completely skip contao
+        if(defined('ADMIN_START')) {
+            if ($this->debug) {
+                $this->logger->debug('Admin Area detected. Skipping Contao autologin');
+            }
+            return;
+        }
+
         // phpbb initializes a new session after logout without reload
         // so the autologin cookies are still in the current request. So just stop here
         if($this->logoutInProgress === true) {
@@ -138,6 +146,7 @@ class AuthProvider extends db
         // We want to avoid that users can be auto logged in to phpbb via cookies
         // so we clean the table, because phpbb does not check if it's allowed to autologin the user
         if(empty($user_data)) {
+
             $sql = 'DELETE FROM ' . SESSIONS_KEYS_TABLE;
             $this->db->sql_query($sql);
         }
@@ -160,6 +169,15 @@ class AuthProvider extends db
         }
 
         $result = parent::login($username, $password);
+
+        // In admin area we completely skip contao
+        if(defined('ADMIN_START')) {
+            if ($this->debug) {
+                $this->logger->debug('Admin Login detected. Skipping Contao login sync', ['user' => $username]);
+            }
+            return $result;
+        }
+
         // We only need to trigger contao login if the phpbb login was successful
         if($result['status'] == LOGIN_SUCCESS){
             $contaoLogin = $this->contaoConnector->login($username, $password, $this->request->is_set_post('autologin'));
