@@ -39,11 +39,14 @@ require_once __DIR__."/../vendor/autoload.php";
  */
 class Connector
 {
+    const IMPORT_USER_PASSWORD_PREFIX = 'contao-';
+
     protected $isBridgeInstalled;
     protected $forum_pageId;
     protected $contao_url;
     protected $contaoDb;
     protected $contaoDbConfig;
+    protected $contaoForumGroups;
 
     protected $debug = false;
 
@@ -65,6 +68,7 @@ class Connector
         $forum_pageId,
         $contao_url,
         $contaoDbConfig,
+        $contaoForumGroups,
         user $user,
         auth $auth,
         request $request, 
@@ -75,6 +79,7 @@ class Connector
         $this->isBridgeInstalled = (bool)$isBridgeInstalled;
         $this->forum_pageId = $forum_pageId;
         $this->contao_url = $contao_url;
+        $this->contaoForumGroups = $contaoForumGroups;
         $this->user = $user;
         $this->auth = $auth;
         $this->request = $request;
@@ -90,6 +95,7 @@ class Connector
             new FingersCrossedHandler(new StreamHandler(__DIR__.'/../bridge_error.log'), Logger::ERROR)
         );
         $this->logger->pushHandler(new StreamHandler(__DIR__.'/../bridge.log', Logger::DEBUG));
+
     }
 
     /**
@@ -186,7 +192,13 @@ class Connector
             }
             elseif ($jsonData->is_logged_in && $jsonData->user_id == 0 && strlen($jsonData->username) > 0) {
                 // A user which already exists in contao and needs to be imported now
-                $userId = $this->importUser($jsonData->username);
+                try {
+                    $userId = $this->importUser($jsonData->username);
+                } catch (\InvalidArgumentException $e) {
+                    if ($this->debug) {
+                        $this->logger->debug("Tried to import user {$jsonData->username} but failed. Maybe user is not in forum groups");
+                    }
+                }
                 $this->prependAuthCookie($browser);
             }
 
@@ -206,12 +218,32 @@ class Connector
     /**
      * Imports a user from contao to phpbb and return the new user id
      *
+     * @throws \InvalidArgumentException
      * @param string $contaoUsername
      * @return int userID
      */
     public function importUser($contaoUsername)
     {
         $contaoUserRow = $this->getContaoUser($contaoUsername);
+        $contaoUserGroups = \unserialize($contaoUserRow['groups']);
+        $isForumMember = false;
+
+        // throw if user does not exist
+        if($contaoUserRow === false) {
+            throw new \InvalidArgumentException("Username {$contaoUsername} does not exist in contao member table and therefore cannot be imported");
+        }
+
+        //only import user if he is member of the assigned forum groups
+        foreach ($this->getContaoForumGroups() as $contaoForumGroup) {
+            if (in_array($contaoForumGroup, $contaoUserGroups)) {
+                $isForumMember = true;
+                break;
+            }
+        }
+        if (!$isForumMember) {
+            throw new \InvalidArgumentException('Cannot import member to phpbb who does not belong to assigned forum groups in page setup.');
+        }
+
 
         // we are going to use the user_add function so include functions_user.php if it wasn't defined yet
         if (!function_exists('user_add'))
@@ -221,13 +253,14 @@ class Connector
 
         $userRow = [
             'username' => $contaoUserRow['username'],
-            'user_password'=> $contaoUserRow['password'], // this is the encrypted contao password. So login will not work with this one
+            'user_password'=> self::IMPORT_USER_PASSWORD_PREFIX . $contaoUserRow['password'], // this is the encrypted contao password. So login will not work with this one
             'user_email' => $contaoUserRow['email'],
             'group_id' => $this->getGroupIdForRegistration(),
             'user_type' => USER_NORMAL,
         ];
 
 
+        $this->logger->info("Importing user {$contaoUsername} from Contao to phpBB");
         $userId = user_add($userRow);
 
         return $userId !== false ? $userId : ANONYMOUS;
@@ -595,6 +628,14 @@ class Connector
         $result = $this->db->sql_query($sql);
         $row = $this->db->sql_fetchrow($result);
         return $row['group_id'];
+    }
+
+    /**
+     * @return array group ids
+     */
+    protected function getContaoForumGroups()
+    {
+        return $this->contaoForumGroups;
     }
 
 }

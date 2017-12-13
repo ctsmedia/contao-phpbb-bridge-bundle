@@ -9,6 +9,7 @@ services:
             - '%contao.forum_pageId%'
             - '%contao.url%'
             - '%contao.db%'
+            - '%contao.forum_groups%'
             - '@user'
             - '@auth'
             - '@request'

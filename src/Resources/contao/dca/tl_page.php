@@ -115,11 +115,17 @@ class tl_page_phpbbforum extends tl_page {
             'dbname' => System::getContainer()->getParameter('database_name'),
         ];
 
+        $forumGroups = $dc->activeRecord->phpbb_default_groups;
+        if(is_string($dc->activeRecord->phpbb_default_groups)) {
+            $forumGroups = unserialize($dc->activeRecord->phpbb_default_groups);
+        }
+
         System::getContainer()->get('phpbb_bridge.connector')->updateConfig(array(
             'contao.forum_pageId' => $dc->activeRecord->id,
             'contao.forum_pageUrl' => Environment::get('url').'/'.$url,
             'contao.url' => Environment::get('url'),
             'contao.forum_pageAlias' => $dc->activeRecord->phpbb_alias,
+            'contao.forum_groups' => $forumGroups,
             'contao.bridge_is_installed' => true,
             'contao.db' => $db
         ));
