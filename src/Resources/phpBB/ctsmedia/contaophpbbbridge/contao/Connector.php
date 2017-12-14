@@ -39,6 +39,9 @@ require_once __DIR__."/../vendor/autoload.php";
  */
 class Connector
 {
+    /**
+     * on change also update Ctsmedia\Phpbb\BridgeBundle\PhpBB\Connector
+     */
     const IMPORT_USER_PASSWORD_PREFIX = 'contao-';
 
     protected $isBridgeInstalled;

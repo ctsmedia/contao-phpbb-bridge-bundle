@@ -20,6 +20,10 @@ $GLOBALS['TL_HOOKS']['importUser'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\E
 $GLOBALS['TL_HOOKS']['checkCredentials'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoFrontendListener', 'onCheckCredentials');
 $GLOBALS['TL_HOOKS']['replaceInsertTags'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoFrontendListener', 'onReplaceInsertTags');
 $GLOBALS['TL_HOOKS']['postLogout'][] = array('\\Ctsmedia\\Phpbb\\BridgeBundle\\EventListener\\ContaoFrontendListener', 'onLogout');
+$GLOBALS['TL_HOOKS']['updatePersonalData'][] = array('phpbb_bridge.event_listener.contao_member_listener', 'onUpdatePersonalData');
+$GLOBALS['TL_HOOKS']['setNewPassword'][] = array('phpbb_bridge.event_listener.contao_member_listener', 'onSetNewPassword');
+
+
 
 
 /**
