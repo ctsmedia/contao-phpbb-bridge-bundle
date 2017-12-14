@@ -2,6 +2,7 @@ parameters:
     contao.forum_pageId: ~
     contao.forum_pageUrl: ~
     contao.forum_pageAlias: ~
+    contao.forum_groups: []
     contao.url: ~
     contao.body_class: ~
     contao.bridge_is_installed: false

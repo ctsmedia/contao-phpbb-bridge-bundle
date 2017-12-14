@@ -3,3 +3,9 @@ services:
         class: Ctsmedia\Phpbb\BridgeBundle\PhpBB\Connector
         arguments:
             - "@database_connection"
+    phpbb_bridge.event_listener.contao_member_listener:
+        class: Ctsmedia\Phpbb\BridgeBundle\EventListener\ContaoMemberListener
+        public: true
+        arguments:
+          - "@phpbb_bridge.connector"
+          - "@monolog.logger.contao"

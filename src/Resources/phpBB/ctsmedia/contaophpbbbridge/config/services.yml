@@ -9,9 +9,13 @@ services:
             - '%contao.forum_pageId%'
             - '%contao.url%'
             - '%contao.db%'
+            - '%contao.forum_groups%'
             - '@user'
             - '@auth'
             - '@request'
+            - '@dbal.conn'
+            - %core.root_path%
+            - %core.php_ext%
     ctsmedia.contaophpbbbridge.theme_listener:
         class: ctsmedia\contaophpbbbridge\event\ThemeListener
         arguments:

@@ -107,6 +107,14 @@ class AuthProvider extends db
             $this->logger->debug(__METHOD__, ['logoutInProgress' => $this->logoutInProgress]);
         }
 
+        // In admin area we completely skip contao
+        if(defined('ADMIN_START')) {
+            if ($this->debug) {
+                $this->logger->debug('Admin Area detected. Skipping Contao autologin');
+            }
+            return;
+        }
+
         // phpbb initializes a new session after logout without reload
         // so the autologin cookies are still in the current request. So just stop here
         if($this->logoutInProgress === true) {
@@ -138,6 +146,7 @@ class AuthProvider extends db
         // We want to avoid that users can be auto logged in to phpbb via cookies
         // so we clean the table, because phpbb does not check if it's allowed to autologin the user
         if(empty($user_data)) {
+
             $sql = 'DELETE FROM ' . SESSIONS_KEYS_TABLE;
             $this->db->sql_query($sql);
         }
@@ -160,10 +169,57 @@ class AuthProvider extends db
         }
 
         $result = parent::login($username, $password);
+        $contaoLogin = null;
+
+        // In admin area we completely skip contao
+        if(defined('ADMIN_START')) {
+            if ($this->debug) {
+                $this->logger->debug('Admin Login detected. Skipping Contao login sync', ['user' => $username]);
+            }
+            return $result;
+        }
+
+        // if the user is not found in the phpbb user base look at contao and import
+        if($result['status'] == LOGIN_ERROR_USERNAME){
+            $contaoUser = $this->contaoConnector->getContaoUser($username);
+
+            // found a contao user, try to import
+            if (false !== $contaoUser) {
+                try{
+                    if($this->debug) {
+                        $this->logger->debug("User {$username} not found in phpbb on login attempt. Trying to import");
+                    }
+                    $this->contaoConnector->importUser($username);
+                    $result = parent::login($username, $password);
+                } catch (\InvalidArgumentException $e) {}
+            }
+        }
+
+        // if the password check is wrong it maybe due to a imported user from contao
+        if($result['status'] == LOGIN_ERROR_PASSWORD){
+            // test if phpbb user password is prefixed with import password prefix
+            if(false !== strpos($result['user_row']['user_password'], Connector::IMPORT_USER_PASSWORD_PREFIX)) {
+                $contaoLogin = $this->contaoConnector->login($username, $password, $this->request->is_set_post('autologin'));
+
+                if ($this->debug) {
+                    $this->logger->debug('Login on imported user with import password. Trying to login via contao and set password' , ['contao_login_status' => $contaoLogin['status']]);
+                }
+
+                // Set password to imported phpbbuser
+                if($contaoLogin['status'] === true) {
+                    $sql = "UPDATE " . USERS_TABLE .
+                        " SET user_password = '{$this->db->sql_escape($this->passwords_manager->hash($password))}'" .
+                        " WHERE user_id = " . (int)$result['user_row']['user_id'];
+                    $this->db->sql_query($sql);
+                    $result = parent::login($username, $password);
+                }
+            }
+        }
+
         // We only need to trigger contao login if the phpbb login was successful
         if($result['status'] == LOGIN_SUCCESS){
-            $contaoLogin = $this->contaoConnector->login($username, $password, $this->request->is_set_post('autologin'));
-            
+            $contaoLogin = ($contaoLogin !== null) ? $contaoLogin : $this->contaoConnector->login($username, $password, $this->request->is_set_post('autologin'));
+
             // Account was locked on contao side
             if($contaoLogin['status'] === false && $contaoLogin['code'] == 'LOCKED') {
                 $result =  array(

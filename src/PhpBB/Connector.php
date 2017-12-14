@@ -39,6 +39,12 @@ use Symfony\Component\Yaml\Yaml;
  */
 class Connector
 {
+
+    /**
+     * on change also update ctsmedia\contaophpbbbridge\contao\Connector
+     */
+    const IMPORT_USER_PASSWORD_PREFIX = 'contao-';
+
     /**
      * @var Connection
      */
@@ -150,6 +156,35 @@ class Connector
 
         return $result;
     }
+
+    /**
+     * Updates a phpbb user, returns true on success
+     *
+     * data should look like:
+     * [
+     *  'field_name' => 'value',
+     *  'user_email' => 'test@test.com'
+     * ]
+     *
+     *
+     * @param $userID
+     * @param array $data
+     *
+     * @return bool
+     */
+    public function updateUser($userID, array $data)
+    {
+        $queryBuilder = $this->db->createQueryBuilder()
+            ->update($this->table_prefix . 'users', 'pu');
+        foreach ($data as $field => $value){
+            $queryBuilder->set("pu.{$field}", $queryBuilder->expr()->literal($value));
+        }
+        $queryBuilder->where('pu.user_id = :user_id')
+            ->setParameter('user_id', (int)$userID);
+
+        return (1 === $queryBuilder->execute());
+    }
+
 
     /**
      * Retrieves User Profile Data by a given phpbb userId
