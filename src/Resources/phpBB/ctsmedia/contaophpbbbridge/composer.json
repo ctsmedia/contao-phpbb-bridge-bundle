@@ -13,7 +13,7 @@
     ],
     "require": {
         "php": ">=5.4",
-        "kriswallsmith/buzz": "~0.15",
+        "kriswallsmith/buzz": "^0.15",
         "monolog/monolog": "^1.19"
     },
     "extra": {
