@@ -15,7 +15,7 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['lockPeriod']['save_callback'][] = a
 $GLOBALS['TL_DCA']['tl_settings']['config']['onsubmit_callback'][] = array('tl_settings_phpbbforum', 'onSubmitCallback');
 
 
-class tl_settings_phpbbforum extends tl_settings {
+class tl_settings_phpbbforum {
 
     protected $clearPhpbbCache = false;
 
